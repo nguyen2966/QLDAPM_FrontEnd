@@ -37,7 +37,9 @@ export function NavBar({ token, role, onLogout }) {
 
   const chonMuc = (hanhDong) => {
     setMoMenu(false);
-    hanhDong?.();
+    if (typeof hanhDong === 'function') {
+    hanhDong();
+  }
   };
 
   return (
@@ -114,14 +116,14 @@ export function NavBar({ token, role, onLogout }) {
 
             {moMenu ? (
               <div className="nav-menu" role="menu" aria-label="Menu tài khoản">
-                <button
+
+                <Link
+                  to="/user"
                   className="nav-menuItem"
-                  type="button"
                   role="menuitem"
-                  onClick={() => chonMuc(() => alert("Demo: Trang “Hồ sơ” sẽ làm sau."))}
-                >
-                  Hồ sơ
-                </button>
+                  onClick={chonMuc}>
+                    Hồ sơ
+                </Link>
 
                 <button
                   className="nav-menuItem"
