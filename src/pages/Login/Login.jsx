@@ -2,14 +2,14 @@ import "./Login.css";
 
 import { Link, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { useGoogleLogin } from "@react-oauth/google";
 
 import Image from "../../assets/Red.jpg";
+import { API } from "../../api/api.js";
+import { useAuth } from "../../hooks/useAuth.js";
 
-const DEMO_ACCOUNTS = {
-  customer: { email: "customer@gmail.com", password: "12345678" },
-  organizer: { email: "organizer@gmail.com", password: "123456789" },
-};
 
+// ─── Icon components ──────────────────────────────────────────────────────────
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -32,10 +32,15 @@ function FacebookIcon() {
   );
 }
 
-function NutMangXaHoi({ variant, label, onClick }) {
+function NutMangXaHoi({ variant, label, onClick, disabled }) {
   const Icon = variant === "google" ? GoogleIcon : FacebookIcon;
   return (
-    <button type="button" className={`login-social login-social--${variant}`} onClick={onClick}>
+    <button
+      type="button"
+      className={`login-social login-social--${variant}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       <span className="login-social__icon" aria-hidden="true">
         <Icon />
       </span>
@@ -44,72 +49,110 @@ function NutMangXaHoi({ variant, label, onClick }) {
   );
 }
 
+// ─── Login Component ──────────────────────────────────────────────────────────
 export function Login() {
   const navigate = useNavigate();
+  const { handleLoginData } = useAuth();
 
-  // 2 chế độ login
   const [mode, setMode] = useState("customer"); // "customer" | "organizer"
 
   const [email, setEmail] = useState(localStorage.getItem("demo_email") || "");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
-
-  // ✅ toggle hiện/ẩn mật khẩu
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const tieuDe = "Chào mừng quay lại!";
-  const moTa = useMemo(() => {
-    return mode === "organizer" ? "Hãy tạo nên những sự kiện thật bùng nổ!" : "Đăng nhập để mở khóa trải nghiệm đặt vé!";
-  }, [mode]);
+  const moTa = useMemo(() =>
+    mode === "organizer"
+      ? "Hãy tạo nên những sự kiện thật bùng nổ!"
+      : "Đăng nhập để mở khóa trải nghiệm đặt vé!",
+    [mode]
+  );
 
-  const nhanEmail = useMemo(() => {
-    return mode === "organizer" ? "Email nhà tổ chức" : "Email";
-  }, [mode]);
+  const nhanEmail = useMemo(() =>
+    mode === "organizer" ? "Email nhà tổ chức" : "Email",
+    [mode]
+  );
 
   const handleSwitchMode = (nextMode) => {
     setMode(nextMode);
     setPassword("");
     setShowPassword(false);
     setError("");
-    // Nếu muốn tự điền email theo mode thì mở dòng dưới:
-    // setEmail(DEMO_ACCOUNTS[nextMode].email);
   };
 
-  const onSubmit = (e) => {
+  // ─── Đăng nhập email/password ───────────────────────────────────────────────
+  const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    const role = mode === "organizer" ? "organizer" : "customer";
-    const expected = DEMO_ACCOUNTS[role];
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) return setError("Vui lòng nhập email.");
+    if (!password) return setError("Vui lòng nhập mật khẩu.");
 
-    const inputEmail = email.trim().toLowerCase();
-    const inputPass = password;
+    setLoading(true);
+    try {
+      const { data } = await API.auth.login({ email: trimmedEmail, password });
+      handleLoginData(data.data); // { user, accessToken }
 
-    if (!inputEmail) return setError("Vui lòng nhập email.");
-    if (!inputPass) return setError("Vui lòng nhập mật khẩu.");
+      if (remember) localStorage.setItem("demo_email", trimmedEmail);
+      else localStorage.removeItem("demo_email");
 
-    // ✅ Chỉ cho đăng nhập đúng 2 tài khoản demo theo role
-    if (inputEmail !== expected.email || inputPass !== expected.password) {
-      return setError("Sai email hoặc mật khẩu.");
+      navigate("/");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── Social Login helpers ────────────────────────────────────────────────────
+  const handleSocialLoginSuccess = async (token, provider) => {
+    setError("");
+    setLoading(true);
+    try {
+      const { data } = await API.auth.loginSocial(token, provider);
+      handleLoginData(data.data);
+      navigate("/");
+    } catch (err) {
+      const msg = err.response?.data?.message || `Đăng nhập ${provider} thất bại.`;
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: ({ access_token }) => handleSocialLoginSuccess(access_token, "google"),
+    onError: () => setError("Đăng nhập Google thất bại."),
+  });
+
+  // Facebook: dùng FB.login từ Facebook JS SDK (load sẵn trong index.html)
+  const loginWithFacebook = () => {
+    // console.log("window.FB:", window.FB);
+    // console.log("window._fbInitialized:", window._fbInitialized);
+    // console.log("FB.getAuthResponse:", window.FB?.getAuthResponse?.());
+
+    if (!window._fbInitialized) {
+      setError("Facebook SDK chưa sẵn sàng. Vui lòng thử lại.");
+      return;
     }
 
-    // ✅ Login OK
-    localStorage.setItem("demo_token", `demo_${role}_${Date.now()}`);
-    localStorage.setItem("demo_role", role);
-
-    if (remember) localStorage.setItem("demo_email", inputEmail);
-    else localStorage.removeItem("demo_email");
-
-    navigate("/");
+    window.FB.login(
+      (response) => {
+        if (response.authResponse?.accessToken) {
+          handleSocialLoginSuccess(response.authResponse.accessToken, "facebook");
+        } else {
+          setError("Đăng nhập Facebook bị hủy.");
+        }
+      },
+      { scope: "email,public_profile" }
+    );
   };
 
-  const onSocial = (provider) => {
-    // theo mockup: chỉ customer có social
-    localStorage.setItem("demo_token", `demo_oauth_${provider}_${Date.now()}`);
-    localStorage.setItem("demo_role", "customer");
-    navigate("/");
-  };
+
 
   return (
     <div className="login-page">
@@ -117,7 +160,7 @@ export function Login() {
         {/* CỘT TRÁI: FORM */}
         <div className="login-left">
           <div className="login-card">
-            <h1 className="login-title">{tieuDe}</h1>
+            <h1 className="login-title">Chào mừng quay lại!</h1>
             <p className="login-subtitle">{moTa}</p>
 
             <form className="login-form" onSubmit={onSubmit}>
@@ -133,6 +176,7 @@ export function Login() {
                   placeholder="Nhập email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
               </div>
 
@@ -140,7 +184,6 @@ export function Login() {
                 <label className="login-label" htmlFor="login-password">
                   Mật khẩu
                 </label>
-
                 <div className="login-passWrap">
                   <input
                     id="login-password"
@@ -150,14 +193,13 @@ export function Login() {
                     placeholder="Nhập mật khẩu"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                   />
-
                   <button
                     type="button"
                     className="login-eye"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                    title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                   >
                     {showPassword ? "🙈" : "👁"}
                   </button>
@@ -166,15 +208,23 @@ export function Login() {
 
               <div className="login-row">
                 <label className="login-remember">
-                  <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
                   <span>Ghi nhớ đăng nhập</span>
                 </label>
               </div>
 
-              {error ? <div className="login-error">{error}</div> : null}
+              {error && <div className="login-error">{error}</div>}
 
-              <button type="submit" className="login-btn login-btn--primary">
-                Đăng nhập
+              <button
+                type="submit"
+                className="login-btn login-btn--primary"
+                disabled={loading}
+              >
+                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
             </form>
 
@@ -182,25 +232,41 @@ export function Login() {
               <span>Hoặc</span>
             </div>
 
-            {/* NÚT CHUYỂN CHẾ ĐỘ */}
             {mode === "customer" ? (
               <>
-                <button type="button" className="login-btn login-btn--outline" onClick={() => handleSwitchMode("organizer")}>
+                <button
+                  type="button"
+                  className="login-btn login-btn--outline"
+                  onClick={() => handleSwitchMode("organizer")}
+                  disabled={loading}
+                >
                   Đăng nhập với tư cách Nhà tổ chức
                 </button>
 
-                {/* Customer có social */}
+                {/* Social login chỉ dành cho customer */}
                 <div className="login-socials">
-                  <NutMangXaHoi variant="google" label="Tiếp tục với Google" onClick={() => onSocial("google")} />
-                  <NutMangXaHoi variant="facebook" label="Tiếp tục với Facebook" onClick={() => onSocial("facebook")} />
+                  <NutMangXaHoi
+                    variant="google"
+                    label="Tiếp tục với Google"
+                    onClick={loginWithGoogle}
+                    disabled={loading} />
+                  <NutMangXaHoi
+                    variant="facebook"
+                    label="Tiếp tục với Facebook"
+                    onClick={loginWithFacebook}
+                    disabled={loading}
+                  />
                 </div>
               </>
             ) : (
-              <>
-                <button type="button" className="login-btn login-btn--outline" onClick={() => handleSwitchMode("customer")}>
-                  Đăng nhập với tư cách Khách hàng
-                </button>
-              </>
+              <button
+                type="button"
+                className="login-btn login-btn--outline"
+                onClick={() => handleSwitchMode("customer")}
+                disabled={loading}
+              >
+                Đăng nhập với tư cách Khách hàng
+              </button>
             )}
 
             <div className="login-footer">
@@ -209,8 +275,6 @@ export function Login() {
                 Đăng ký tại đây
               </Link>
             </div>
-
-
           </div>
         </div>
 

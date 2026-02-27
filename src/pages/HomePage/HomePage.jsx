@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { NavBar } from "../../components/NavBar/NavBar";
 import { Footer } from "../../components/Footer/Footer";
+import { useAuth } from "../../hooks/useAuth.js";
 
 import ImageEvent1 from "../../assets/Red.jpg";
 import ImageEvent2 from "../../assets/Red.jpg";
@@ -122,8 +123,7 @@ function AnhCard({ src, alt }) {
 export function HomePage() {
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("demo_token");
-  const role = localStorage.getItem("demo_role") || "customer";
+  const { accessToken, user, logout } = useAuth();
 
   const [tuKhoa, setTuKhoa] = useState("");
   const [diaDiem, setDiaDiem] = useState("all");
@@ -160,13 +160,12 @@ export function HomePage() {
   }, [tuKhoa, diaDiem, ngay]);
 
   const datVe = (event) => {
-    if (!token) return navigate("/login");
+    if (!accessToken) return navigate("/login");
     alert(`✅ Demo: Đặt vé thành công cho “${event.name}”`);
   };
 
   const dangXuat = () => {
-    localStorage.removeItem("demo_token");
-    localStorage.removeItem("demo_role");
+    logout();
     navigate("/login");
   };
 
@@ -175,7 +174,7 @@ export function HomePage() {
 
   return (
     <div className="home-page">
-      <NavBar token={token} role={role} onLogout={dangXuat} />
+      <NavBar token={accessToken} role={user.role} onLogout={dangXuat} />
 
       <main className="home-main" id="trang-chu">
         {/* HERO */}
