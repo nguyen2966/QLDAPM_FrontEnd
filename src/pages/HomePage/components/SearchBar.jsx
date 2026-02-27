@@ -1,0 +1,39 @@
+export function SearchBar({ tuKhoa, setTuKhoa, ngay, setNgay, diaDiem, setDiaDiem, danhSachDiaDiem, onSearch }) {
+  return (
+    <section className="home-search" aria-label="Tìm kiếm sự kiện">
+      <div className="home-search__bar">
+        <div className="home-search__label">Bạn muốn tìm sự kiện nào?</div>
+
+        <input
+          className="home-search__input"
+          placeholder="Tìm theo tên hoặc từ khoá..."
+          value={tuKhoa}
+          onChange={(e) => setTuKhoa(e.target.value)}
+        />
+
+        <input
+          className="home-search__date"
+          type="date"
+          value={ngay}
+          onChange={(e) => setNgay(e.target.value)}
+        />
+
+        <select
+          className="home-search__select"
+          value={diaDiem}
+          onChange={(e) => setDiaDiem(e.target.value)}
+        >
+          {danhSachDiaDiem.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc === "all" ? "Địa điểm" : loc}
+            </option>
+          ))}
+        </select>
+
+        <button className="home-btn home-btn--primary" type="button" onClick={onSearch}>
+          Tìm kiếm
+        </button>
+      </div>
+    </section>
+  );
+}
