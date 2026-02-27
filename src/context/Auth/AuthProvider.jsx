@@ -1,31 +1,29 @@
-// Provide Global Auth data for all pages and components
-//TODO
-import { createContext, useEffect, useState } from "react";
-import { API } from "../api/api.js";
-import { setAuthHeader } from "../api/axiosInstance.js";
+import { useEffect, useState } from "react";
+import { AuthContext } from "./AuthContext.js";
+import { API } from "../../api/api.js";
+import { setAuthHeader } from "../../api/axiosInstance.js";
 
-const AuthContext = createContext();
-
-export const AuthProvider = ( {children} ) => {
+export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{
+  useEffect(() => {
     const initAuth = async () => {
-      try{
+      try {
         const { data } = await API.auth.refreshToken();
         handleLoginData(data.data);
       } catch {
         setUser(null);
+        setAccessToken(null);
       } finally {
         setLoading(false);
       }
     };
     initAuth();
-  },[]);
+  }, []);
 
-  const handleLoginData = ({user,accessToken}) =>{
+  const handleLoginData = ({ user, accessToken }) => {
     setUser(user);
     setAccessToken(accessToken);
     setAuthHeader(accessToken);
