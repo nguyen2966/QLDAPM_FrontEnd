@@ -3,6 +3,7 @@ import "./NavBar.css";
 import bkLogo from "../../assets/bklogo.png";
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { API } from "../../api/api.js";
 
 function tenVaiTro(role) {
   if (role === "admin") return "Quản trị";
@@ -45,6 +46,16 @@ export function NavBar({ token, role, onLogout }) {
   return (
     <header className="home-header">
       <div className="home-header__left">
+        <button onClick={async ()=>{
+          try{
+             const testRes = await API.test.testHealth();
+             console.log(testRes)
+          } catch(err){
+            console.log(err);
+          } 
+        }}>
+          TEST
+        </button>
         <Link to="/" className="home-brand">
           <img className="home-brand__logo" src={bkLogo} alt="EventPass" />
           <span className="home-brand__name">EventPass</span>
