@@ -7,6 +7,9 @@ export const API = {
     loginSocial: (token, provider) => axiosInstance.post("/auth/social-login", { provider, token }),
     refreshToken: () => axiosInstance.post("/auth/refresh-token")
   },
+  test: {
+    testHealth: () => axiosInstance.get("/test")
+  },
   user: {
     /**
      * Lấy thông tin chi tiết User kèm Profile (MOCK DATA)
