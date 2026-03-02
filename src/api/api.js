@@ -5,7 +5,8 @@ export const API = {
     register: (data) => axiosInstance.post("/auth/register", data),
     login: (data) => axiosInstance.post("/auth/login", data),
     loginSocial: (token, provider) => axiosInstance.post("/auth/social-login", { provider, token }),
-    refreshToken: () => axiosInstance.post("/auth/refresh-token")
+    refreshToken: () => axiosInstance.post("/auth/refresh-token"),
+    logout: () => axiosInstance.delete("/auth/delete-token"),
   },
   test: {
     testHealth: () => axiosInstance.get("/test")
