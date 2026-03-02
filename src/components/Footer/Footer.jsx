@@ -17,7 +17,7 @@ export function Footer() {
             support@eventpass.vn
           </a>
           <a className="home-footer__link" href="#" onClick={(e) => e.preventDefault()}>
-            (+84) 0900 000 000
+            (+84) 0700 000 000
           </a>
         </div>
 

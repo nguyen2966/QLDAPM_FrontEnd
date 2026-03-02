@@ -25,9 +25,9 @@
   padding: 26px;
 
   background:
-    radial-gradient(900px 520px at 12% 10%, rgba(255,0,51,.14), transparent 55%),
+    radial-gradient(700px 520px at 12% 10%, rgba(255,0,51,.14), transparent 55%),
     radial-gradient(820px 480px at 92% 18%, rgba(220,38,38,.10), transparent 60%),
-    radial-gradient(900px 540px at 55% 92%, rgba(255,45,85,.12), transparent 62%),
+    radial-gradient(700px 540px at 55% 92%, rgba(255,45,85,.12), transparent 62%),
     #fff;
 }
 
@@ -93,7 +93,7 @@
   background: rgba(255,255,255,0.96);
   border-radius: 14px;
   padding: 8px 10px;
-  font-weight: 950;
+  font-weight: 700;
   cursor: pointer;
   transition: 170ms ease;
   color: rgba(15,23,42,.88);
@@ -115,14 +115,14 @@
 .signup-title{
   margin: 18px 0 6px;
   font-size: 34px;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: -0.6px;
   color: var(--ink);
 }
 
 .signup-subtitle{
   margin: 0 0 18px;
-  font-weight: 800;
+  font-weight: 600;
   color: rgba(15,23,42,.68);
 }
 
@@ -142,7 +142,7 @@
 }
 
 .signup-label{
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(15,23,42,.86);
 }
 
@@ -152,7 +152,7 @@
   border-radius: 16px;
   border: 1px solid rgba(15,23,42,.14);
   padding: 12px 14px;
-  font-weight: 850;
+  font-weight: 600;
   outline: none;
   background: rgba(255,255,255,.98);
   transition: 160ms ease;
@@ -161,7 +161,7 @@
 
 .signup-input::placeholder{
   color: rgba(15,23,42,.40);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .signup-input:focus{
@@ -181,7 +181,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(15,23,42,.72);
 }
 
@@ -196,7 +196,7 @@
   border: 1px solid rgba(255,0,51,.24);
   background: rgba(255,0,51,.08);
   color: #b30024;
-  font-weight: 950;
+  font-weight: 700;
   padding: 10px 12px;
   border-radius: 16px;
 }
@@ -206,7 +206,7 @@
   width: 100%;
   border-radius: 16px;
   padding: 13px 14px;
-  font-weight: 950;
+  font-weight: 700;
   cursor: pointer;
   transition: 170ms ease;
   border: 1px solid rgba(255,0,51,.18);
@@ -236,7 +236,7 @@
   align-items: center;
   margin: 10px 0 8px;
   color: rgba(15,23,42,.55);
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .signup-divider::before,
@@ -258,7 +258,7 @@
   background: rgba(255,255,255,.96);
   border-radius: 16px;
   padding: 12px 14px;
-  font-weight: 950;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -294,12 +294,12 @@
   gap: 8px;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(15,23,42,.70);
 }
 
 .signup-footer__link{
-  font-weight: 950;
+  font-weight: 700;
   color: var(--red-700);
   text-decoration: underline;
   text-underline-offset: 3px;
