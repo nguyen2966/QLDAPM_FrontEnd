@@ -15,7 +15,7 @@
 }
 
 .home-footer__brandName {
-  font-weight: 900;
+  font-weight: 700;
   font-size: 18px;
   color: var(--ep-text, #111);
 }
@@ -27,7 +27,7 @@
 }
 
 .home-footer__title {
-  font-weight: 900;
+  font-weight: 700;
   color: var(--ep-red, #dc2626);
   margin-bottom: 10px;
 }
@@ -59,7 +59,7 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--ep-red, #dc2626);
   background: rgba(220, 38, 38, 0.06);
   transition: 180ms ease;
@@ -87,7 +87,7 @@
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .home-footer__inner {
     grid-template-columns: 1fr;
   }

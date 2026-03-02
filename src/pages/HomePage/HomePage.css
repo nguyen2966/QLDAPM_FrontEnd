@@ -32,7 +32,7 @@ html{ scroll-behavior: smooth; }
 .home-btn{
   border: 0;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 600;
   border-radius: 14px;
   padding: 10px 14px;
   transition: 180ms ease;
@@ -81,7 +81,7 @@ html{ scroll-behavior: smooth; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--ep-red);
   background: rgba(220,38,38,0.10);
   border: 1px solid rgba(220,38,38,0.18);
@@ -165,7 +165,7 @@ html{ scroll-behavior: smooth; }
   background: rgba(255,255,255,0.88);
   box-shadow: 0 16px 36px rgba(0,0,0,0.18);
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(220,38,38,0.92);
   cursor: pointer;
   transition: 160ms ease;
@@ -197,7 +197,7 @@ html{ scroll-behavior: smooth; }
 }
 
 .home-search__label{
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(0,0,0,0.75);
   padding-left: 6px;
 }
@@ -238,7 +238,7 @@ html{ scroll-behavior: smooth; }
 .home-section__title{
   margin: 0;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(0,0,0,0.82);
 }
 
@@ -301,14 +301,14 @@ html{ scroll-behavior: smooth; }
 .home-card__title{
   margin: 0;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(0,0,0,0.85);
   line-height: 1.25;
 }
 
 .home-card__tag{
   flex: 0 0 auto;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
@@ -328,7 +328,7 @@ html{ scroll-behavior: smooth; }
   align-items: center;
   gap: 10px;
   color: rgba(0,0,0,0.70);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .home-card__metaIcon{
@@ -354,7 +354,7 @@ html{ scroll-behavior: smooth; }
 }
 
 .home-card__price{
-  font-weight: 950;
+  font-weight: 700;
   color: var(--ep-red);
 }
 
@@ -408,18 +408,18 @@ html{ scroll-behavior: smooth; }
 
 .home-upcoming__name{
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(0,0,0,0.85);
   line-height: 1.2;
 }
 
 .home-upcoming__meta{
-  font-weight: 800;
+  font-weight: 600;
   color: rgba(0,0,0,0.55);
 }
 
 .home-upcoming__price{
-  font-weight: 950;
+  font-weight: 700;
   color: var(--ep-red);
 }
 
@@ -433,7 +433,7 @@ html{ scroll-behavior: smooth; }
   .home-upcoming__item{ grid-template-columns: 220px 1fr; }
 }
 
-@media (max-width: 900px){
+@media (max-width: 700px){
   .home-main{ padding: 14px 14px 10px; }
   .home-hero{ grid-template-columns: 1fr; }
   .home-search__bar{ grid-template-columns: 1fr; }

@@ -36,7 +36,7 @@
 }
 
 .home-brand__name {
-  font-weight: 900;
+  font-weight: 700;
   color: #111;
   letter-spacing: 0.2px;
 }
@@ -51,7 +51,7 @@
 .home-nav__link {
   text-decoration: none;
   color: rgba(0,0,0,0.78);
-  font-weight: 800;
+  font-weight: 600;
   padding: 8px 10px;
   border-radius: 12px;
   transition: 180ms ease;
@@ -72,7 +72,7 @@
 .home-btn {
   border: 0;
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   border-radius: 14px;
   padding: 10px 14px;
   transition: 180ms ease;
@@ -127,7 +127,7 @@
   border: 1px solid rgba(0,0,0,0.10);
   background: #fff;
   box-shadow: 0 10px 28px rgba(0,0,0,0.08);
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(0,0,0,0.78);
   user-select: none;
   cursor: default;
@@ -200,7 +200,7 @@
   border: 0;
   background: transparent;
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 700;
   color: rgba(0,0,0,0.78);
   transition: 160ms ease;
 }
@@ -224,11 +224,11 @@
 .nav-menuHint {
   padding: 8px 12px;
   color: rgba(0,0,0,0.55);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 12px;
 }
 
 /* Responsive: màn nhỏ ẩn menu nav cho gọn */
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .home-nav { display: none; }
 }

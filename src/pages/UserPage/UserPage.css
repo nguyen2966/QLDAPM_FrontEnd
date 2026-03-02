@@ -16,9 +16,9 @@
 .user-page{
   min-height: 100vh;
   background:
-    radial-gradient(900px 520px at 12% 10%, rgba(255,0,51,.10), transparent 55%),
+    radial-gradient(700px 520px at 12% 10%, rgba(255,0,51,.10), transparent 55%),
     radial-gradient(820px 480px at 92% 18%, rgba(220,38,38,.08), transparent 60%),
-    radial-gradient(900px 540px at 55% 92%, rgba(255,45,85,.08), transparent 62%),
+    radial-gradient(700px 540px at 55% 92%, rgba(255,45,85,.08), transparent 62%),
     #fff;
 }
 
@@ -45,7 +45,7 @@
   display:inline-flex;
   align-items:center;
   gap:8px;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--ep-red);
   background: rgba(220,38,38,0.10);
   border: 1px solid rgba(220,38,38,0.18);
@@ -82,7 +82,7 @@
   margin-top: 12px;
   border-radius: 18px;
   padding: 12px 14px;
-  font-weight: 900;
+  font-weight: 700;
   border: 1px solid rgba(0,0,0,0.08);
   box-shadow: 0 10px 26px rgba(0,0,0,0.06);
 }
@@ -154,12 +154,12 @@
 
 .user-avatar__txt{
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 700;
   color: var(--ep-red);
 }
 
 .user-summary__name{
-  font-weight: 950;
+  font-weight: 700;
   font-size: 18px;
   color: #111;
   margin-bottom: 6px;
@@ -177,7 +177,7 @@
   gap: 6px;
   border-radius: 999px;
   padding: 6px 10px;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 12px;
   border: 1px solid rgba(0,0,0,0.08);
   background: #fff;
@@ -208,8 +208,8 @@
   color: rgba(0,0,0,0.68);
 }
 
-.user-miniKey{ color: rgba(0,0,0,0.55); font-weight: 800; }
-.user-miniVal{ color: rgba(0,0,0,0.78); font-weight: 900; }
+.user-miniKey{ color: rgba(0,0,0,0.55); font-weight: 600; }
+.user-miniVal{ color: rgba(0,0,0,0.78); font-weight: 700; }
 
 /* UPLOAD */
 .user-uploadBlock{
@@ -218,7 +218,7 @@
 }
 
 .user-uploadTitle{
-  font-weight: 950;
+  font-weight: 700;
   color: #111;
 }
 
@@ -232,7 +232,7 @@
   border: 1px solid rgba(220,38,38,0.25);
   background: rgba(220,38,38,0.06);
   color: var(--ep-red);
-  font-weight: 950;
+  font-weight: 700;
   cursor:pointer;
   width: fit-content;
   transition: 160ms ease;
@@ -274,7 +274,7 @@
 }
 
 .user-label{
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(15,23,42,0.86);
 }
 
@@ -283,7 +283,7 @@
   border-radius: 16px;
   border: 1px solid rgba(15,23,42,0.14);
   padding: 12px 14px;
-  font-weight: 850;
+  font-weight: 600;
   outline:none;
   background: rgba(255,255,255,.96);
   transition: 160ms ease;
@@ -314,7 +314,7 @@
 
 .user-error{
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--ep-red-700);
 }
 
@@ -326,7 +326,7 @@
 }
 
 .user-link{
-  font-weight: 950;
+  font-weight: 700;
   color: var(--ep-red);
   text-decoration: none;
 }
@@ -335,11 +335,11 @@
   text-decoration: underline;
 }
 
-.user-muted{ color: rgba(0,0,0,0.55); font-weight: 800; }
+.user-muted{ color: rgba(0,0,0,0.55); font-weight: 600; }
 
 .user-sectionTitle{
   margin-top: 4px;
-  font-weight: 950;
+  font-weight: 700;
   color: var(--ep-red);
   border-left: 4px solid rgba(220,38,38,0.55);
   padding-left: 10px;
@@ -349,7 +349,7 @@
 .user-btn{
   border: 0;
   cursor: pointer;
-  font-weight: 950;
+  font-weight: 700;
   border-radius: 16px;
   padding: 12px 14px;
   transition: 170ms ease;
@@ -394,7 +394,7 @@
   border-radius: 18px;
   border: 1px dashed rgba(220,38,38,0.18);
   background: rgba(220,38,38,0.04);
-  font-weight: 800;
+  font-weight: 600;
   color: rgba(0,0,0,0.66);
 }
 
