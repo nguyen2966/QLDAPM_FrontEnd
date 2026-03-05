@@ -1,5 +1,18 @@
 function dinhDangVND(amount) {
-  return `${amount.toLocaleString("vi-VN")} VNĐ`;
+  return `${Number(amount).toLocaleString("vi-VN")} VNĐ`;
+}
+
+// Lấy giá thấp nhất trong ticketClasses, fallback về 0
+function layGiaThapNhat(ticketClasses = []) {
+  if (!ticketClasses.length) return 0;
+  return Math.min(...ticketClasses.map((t) => Number(t.price)));
+}
+
+function dinhDangNgay(isoString) {
+  if (!isoString) return "";
+  return new Date(isoString).toLocaleDateString("vi-VN", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+  });
 }
 
 function AnhCard({ src, alt }) {
@@ -17,30 +30,32 @@ export function EventGrid({ events, onDatVe }) {
 
       <div className="home-grid">
         {events.map((ev) => (
-          <article key={ev.id} className="home-card">
-            <div className="home-event-img" aria-label={ev.name} role="img">
-              <AnhCard src={ev.image} alt={`Ảnh sự kiện: ${ev.name}`} />
+          <article key={ev.eventId} className="home-card">
+            <div className="home-event-img" aria-label={ev.eventName} role="img">
+              <AnhCard src={ev.eventImgUrl} alt={`Ảnh sự kiện: ${ev.eventName}`} />
             </div>
 
             <div className="home-card__body">
               <div className="home-card__top">
-                <h3 className="home-card__title">{ev.name}</h3>
-                <div className="home-card__tag">{ev.category}</div>
+                <h3 className="home-card__title">{ev.eventName}</h3>
+                <div className="home-card__tag">{ev.genre}</div>
               </div>
 
               <div className="home-card__meta">
                 <div className="home-card__metaRow">
                   <span className="home-card__metaIcon" aria-hidden="true">📅</span>
-                  <span className="home-card__metaText">{ev.date}</span>
+                  <span className="home-card__metaText">{dinhDangNgay(ev.dateToStart)}</span>
                 </div>
                 <div className="home-card__metaRow">
                   <span className="home-card__metaIcon" aria-hidden="true">📍</span>
-                  <span className="home-card__metaText">{ev.location}</span>
+                  <span className="home-card__metaText">{ev.venue?.venueName}</span>
                 </div>
               </div>
 
               <div className="home-card__bottom">
-                <div className="home-card__price">{dinhDangVND(ev.price)}</div>
+                <div className="home-card__price">
+                  Từ {dinhDangVND(layGiaThapNhat(ev.ticketClasses))}
+                </div>
                 <button className="home-btn home-btn--primary" type="button" onClick={() => onDatVe(ev)}>
                   Đặt vé
                 </button>

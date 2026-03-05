@@ -1,5 +1,17 @@
-function dinhDangVND(amount) {
-  return `${amount.toLocaleString("vi-VN")} VNĐ`;
+ function dinhDangVND(amount) {
+  return `${Number(amount).toLocaleString("vi-VN")} VNĐ`;
+}
+
+function layGiaThapNhat(ticketClasses = []) {
+  if (!ticketClasses.length) return 0;
+  return Math.min(...ticketClasses.map((t) => Number(t.price)));
+}
+
+function dinhDangNgay(isoString) {
+  if (!isoString) return "";
+  return new Date(isoString).toLocaleDateString("vi-VN", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+  });
 }
 
 function AnhCard({ src, alt }) {
@@ -17,18 +29,20 @@ export function UpcomingEvents({ events }) {
 
       <div className="home-upcoming">
         {events.map((ev) => (
-          <div key={ev.id} className="home-upcoming__item">
+          <div key={ev.eventId} className="home-upcoming__item">
             <div className="home-upcoming__left">
               <div className="home-upcoming__imgWrap">
-                <div className="home-event-img" aria-label={ev.name} role="img">
-                  <AnhCard src={ev.image} alt={`Ảnh sự kiện: ${ev.name}`} />
+                <div className="home-event-img" aria-label={ev.eventName} role="img">
+                  <AnhCard src={ev.eventImgUrl} alt={`Ảnh sự kiện: ${ev.eventName}`} />
                 </div>
               </div>
             </div>
             <div className="home-upcoming__right">
-              <div className="home-upcoming__name">{ev.name}</div>
-              <div className="home-upcoming__meta">{ev.date}</div>
-              <div className="home-upcoming__price">{dinhDangVND(ev.price)}</div>
+              <div className="home-upcoming__name">{ev.eventName}</div>
+              <div className="home-upcoming__meta">{dinhDangNgay(ev.dateToStart)}</div>
+              <div className="home-upcoming__price">
+                Từ {dinhDangVND(layGiaThapNhat(ev.ticketClasses))}
+              </div>
             </div>
           </div>
         ))}

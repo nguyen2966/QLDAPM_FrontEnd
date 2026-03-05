@@ -1,7 +1,6 @@
 import "./UserPage.css";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth.js";
 import { API } from "../../api/api.js";
@@ -61,8 +60,7 @@ function validateForm(form) {
 }
 
 export function UserPage() {
-  const navigate = useNavigate();
-  const { user, accessToken, logout, updateAvatar } = useAuth();
+  const { user, updateAvatar } = useAuth();
 
   const userId = useMemo(() => user?.userId ?? user?.id, [user]);
 
@@ -121,10 +119,6 @@ export function UserPage() {
     return () => clearTimeout(timer);
   }, [notice]);
 
-  const onLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   const startEdit = () => {
     setNotice(null);
@@ -231,14 +225,7 @@ export function UserPage() {
 
   return (
     <div className="user-page">
-      <NavBar
-        token={accessToken}
-        role={user?.role}
-        onLogout={onLogout}
-        avatarUrl={user?.avatarUrl || user?.picture || user?.photoURL}
-        displayName={user?.name || user?.email}
-      />
-
+     
       <main className="user-main">
         <UserHero
           editMode={editMode}
@@ -277,8 +264,6 @@ export function UserPage() {
           />
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
