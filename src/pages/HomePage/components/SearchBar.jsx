@@ -1,7 +1,18 @@
-export function SearchBar({ tuKhoa, setTuKhoa, ngay, setNgay, diaDiem, setDiaDiem, danhSachDiaDiem, onSearch }) {
+export function SearchBar({
+  tuKhoa,
+  setTuKhoa,
+  genre,
+  setGenre,
+  ngay,
+  setNgay,
+  diaDiem,
+  setDiaDiem,
+  danhSachDiaDiem,
+  onSearch,
+}) {
   return (
     <section className="home-search" aria-label="Tìm kiếm sự kiện">
-      <div className="home-search__bar">
+      <div className="home-search__bar home-search__bar--wide">
         <div className="home-search__label">Bạn muốn tìm sự kiện nào?</div>
 
         <input
@@ -9,6 +20,13 @@ export function SearchBar({ tuKhoa, setTuKhoa, ngay, setNgay, diaDiem, setDiaDie
           placeholder="Tìm theo tên hoặc từ khoá..."
           value={tuKhoa}
           onChange={(e) => setTuKhoa(e.target.value)}
+        />
+
+        <input
+          className="home-search__input"
+          placeholder="Tìm theo thể loại..."
+          value={genre}
+          onChange={(e) => setGenre(e.target.value)}
         />
 
         <input
