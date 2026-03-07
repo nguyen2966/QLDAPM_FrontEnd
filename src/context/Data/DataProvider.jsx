@@ -1,85 +1,130 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { API } from '../../api/api.js';
-import { DataContext } from './DataContext.js';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { API } from "../../api/api.js";
+import { DataContext } from "./DataContext.js";
+import { useAuth } from "../../hooks/useAuth.js";
 
+function laPhanHoiThanhCong(response) {
+  return response?.data?.status === "success";
+}
+
+function rutGonDanhSachDiaDiem(events = []) {
+  const venueMap = new Map();
+
+  events.forEach((event) => {
+    const venue = event?.venue;
+    if (!venue) return;
+
+    const key = venue.venueId || venue.venueName;
+    if (!key) return;
+
+    if (!venueMap.has(key)) {
+      venueMap.set(key, {
+        venueId: venue.venueId ?? key,
+        venueName: venue.venueName || `Địa điểm ${key}`,
+        address: venue.address || "",
+        capacity: venue.capacity || null,
+      });
+    }
+  });
+
+  return Array.from(venueMap.values());
+}
 
 export const DataProvider = ({ children }) => {
- 
+  const { accessToken, loading: authLoading } = useAuth();
+
   const [events, setEvents] = useState([]);
-  const [venues, setVenues] = useState([]); // Đón đầu luôn cho chức năng chọn địa điểm
-  
-  // Quản lý trạng thái loading dưới dạng object để biết chính xác cái nào đang load
+  const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState({
     events: true,
     venues: true,
   });
-  
   const [error, setError] = useState(null);
 
-  
-  // Dùng useCallback để hàm này không bị tạo lại mỗi lần component re-render
   const fetchEvents = useCallback(async () => {
-    setLoading(prev => ({ ...prev, events: true }));
+    if (!accessToken) {
+      setEvents([]);
+      setVenues([]);
+      setLoading({ events: false, venues: false });
+      return;
+    }
+
+    setLoading({ events: true, venues: true });
+    setError(null);
+
     try {
-      const response = await API.event.getAll(); // Mọi api trả về đều chuẩn hóa có response.data.data
-      if (response.data?.status === "success") {
-        setEvents(response.data.data);
+      const response = await API.event.getAll();
+
+      if (!laPhanHoiThanhCong(response)) {
+        setEvents([]);
+        setVenues([]);
+        setError("Không thể tải danh sách sự kiện lúc này.");
+        return;
       }
+
+      const danhSachCoBan = response?.data?.data || [];
+
+      const danhSachChiTiet = await Promise.all(
+        danhSachCoBan.map(async (event) => {
+          try {
+            const detailResponse = await API.event.getById(event.eventId);
+
+            if (laPhanHoiThanhCong(detailResponse)) {
+              return detailResponse.data.data;
+            }
+
+            return event;
+          } catch (detailError) {
+            console.error(`Lỗi khi lấy chi tiết event ${event.eventId}:`, detailError);
+            return event;
+          }
+        })
+      );
+
+      setEvents(danhSachChiTiet);
+      setVenues(rutGonDanhSachDiaDiem(danhSachChiTiet));
     } catch (err) {
       console.error("Lỗi khi tải danh sách sự kiện:", err);
+      setEvents([]);
+      setVenues([]);
       setError("Không thể tải danh sách sự kiện lúc này.");
     } finally {
-      setLoading(prev => ({ ...prev, events: false }));
+      setLoading({ events: false, venues: false });
     }
-  }, []);
+  }, [accessToken]);
 
-  const fetchVenues = useCallback(async () => {
-    setLoading(prev => ({ ...prev, venues: true }));
-    try {
-      // Gọi API mock getAllVenues mà chúng ta đã nhắc đến
-      const response = await API.venue.getAllVenues(); 
-      if (response.data?.status === "success") {
-        setVenues(response.data.data);
-      }
-    } catch (err) {
-      console.error("Lỗi khi tải danh sách địa điểm:", err);
-      // Không cần set Error toàn cục nếu venue chỉ là data phụ
-    } finally {
-      setLoading(prev => ({ ...prev, venues: false }));
-    }
-  }, []);
-
-
+  const refreshVenues = useCallback(() => {
+    setVenues(rutGonDanhSachDiaDiem(events));
+  }, [events]);
 
   useEffect(() => {
-    // Có thể dùng Promise.all nếu muốn tải song song và đợi cả hai cùng xong
+    if (authLoading) return;
+
+    if (!accessToken) {
+      setEvents([]);
+      setVenues([]);
+      setLoading({ events: false, venues: false });
+      return;
+    }
+
     fetchEvents();
-    fetchVenues();
-  }, [fetchEvents, fetchVenues]);
+  }, [authLoading, accessToken, fetchEvents]);
 
-  
-  // BẮT BUỘC DÙNG useMemo: Nếu không có useMemo, mỗi khi có state thay đổi, 
-  // toàn bộ các component con dùng useData() đều bị ép render lại.
-  const contextValue = useMemo(() => ({
-    // Data
-    events,
-    venues,
-    
-    // Trạng thái
-    loading,
-    error,
-    
-    // Các hàm trigger để component con có thể chủ động gọi lại API khi cần
-    // (VD: sau khi user tạo event mới thành công, gọi refreshEvents để list tự cập nhật)
-    refreshEvents: fetchEvents,
-    refreshVenues: fetchVenues,
-  }), [events, venues, loading, error, fetchEvents, fetchVenues]);
+  const contextValue = useMemo(
+    () => ({
+      events,
+      venues,
+      loading,
+      error,
+      refreshEvents: fetchEvents,
+      refreshVenues,
+    }),
+    [events, venues, loading, error, fetchEvents, refreshVenues]
+  );
 
-  // 3. Render Provider
   return (
     <DataContext.Provider value={contextValue}>
       {children}
     </DataContext.Provider>
   );
 };
-

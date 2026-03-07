@@ -1,8 +1,9 @@
 import "./HomePage.css";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { API } from "../../api/api.js";
 import { useAuth } from "../../hooks/useAuth.js";
 import { useData } from "../../hooks/useData.js";
 import { HeroSection } from "./components/HeroSection.jsx";
@@ -63,6 +64,61 @@ function layGiaThapNhatTheoLoai(ticketClasses = [], ticketType = "all") {
   return Math.min(...danhSachVe.map((ticket) => Number(ticket?.price || 0)));
 }
 
+function dinhDangVND(amount) {
+  return `${Number(amount || 0).toLocaleString("vi-VN")} VNĐ`;
+}
+
+function dinhDangNgay(isoString) {
+  if (!isoString) return "";
+  return new Date(isoString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function layNhanTrangThai(status) {
+  const s = String(status || "").toUpperCase();
+
+  switch (s) {
+    case "PENDING":
+      return "Chờ duyệt";
+    case "APPROVED":
+      return "Đã duyệt";
+    case "REJECTED":
+      return "Bị từ chối";
+    case "IN_PROGRESS":
+      return "Đang mở bán";
+    case "CANCELLED":
+      return "Đã huỷ";
+    default:
+      return "Chưa cập nhật";
+  }
+}
+
+function layClassTrangThai(status) {
+  const s = String(status || "").toUpperCase();
+
+  switch (s) {
+    case "APPROVED":
+      return "is-approved";
+    case "PENDING":
+      return "is-pending";
+    case "REJECTED":
+      return "is-rejected";
+    case "IN_PROGRESS":
+      return "is-progress";
+    case "CANCELLED":
+      return "is-cancelled";
+    default:
+      return "";
+  }
+}
+
+function laPhanHoiThanhCong(response) {
+  return response?.data?.status === "success";
+}
+
 function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
 
@@ -106,8 +162,10 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { events, loading, error } = useData();
+
+  const isOrganizer = user?.role === "ORGANIZER";
 
   const [tuKhoa, setTuKhoa] = useState("");
   const [genre, setGenre] = useState("all");
@@ -117,6 +175,10 @@ export function HomePage() {
   const [ticketType, setTicketType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [featuredIndex, setFeaturedIndex] = useState(0);
+
+  const [myEvents, setMyEvents] = useState([]);
+  const [loadingMyEvents, setLoadingMyEvents] = useState(false);
+  const [errorMyEvents, setErrorMyEvents] = useState("");
 
   const cuonToi = (id) => {
     const el = document.getElementById(id);
@@ -130,6 +192,57 @@ export function HomePage() {
       behavior: "smooth",
     });
   };
+
+  useEffect(() => {
+    const fetchMyEvents = async () => {
+      if (!isOrganizer) {
+        setMyEvents([]);
+        return;
+      }
+
+      setLoadingMyEvents(true);
+      setErrorMyEvents("");
+
+      try {
+        const response = await API.event.getMyEvents();
+
+        if (!laPhanHoiThanhCong(response)) {
+          setErrorMyEvents("Không thể tải danh sách sự kiện của bạn.");
+          setMyEvents([]);
+          return;
+        }
+
+        const myEventList = response?.data?.data || [];
+
+        const myEventDetails = await Promise.all(
+          myEventList.map(async (event) => {
+            try {
+              const detailResponse = await API.event.getMyEventById(event.eventId);
+
+              if (laPhanHoiThanhCong(detailResponse)) {
+                return detailResponse.data.data;
+              }
+
+              return event;
+            } catch {
+              return event;
+            }
+          })
+        );
+
+        setMyEvents(myEventDetails);
+      } catch (err) {
+        setErrorMyEvents(
+          err?.response?.data?.message || "Không thể tải danh sách sự kiện của bạn."
+        );
+        setMyEvents([]);
+      } finally {
+        setLoadingMyEvents(false);
+      }
+    };
+
+    fetchMyEvents();
+  }, [isOrganizer]);
 
   const featured = useMemo(() => {
     if (!events.length) return null;
@@ -175,7 +288,6 @@ export function HomePage() {
           : ticketClassesTheoLoai.length > 0;
 
       const giaDaiDien = layGiaThapNhatTheoLoai(ticketClasses, ticketType);
-
       const matchPrice =
         priceFilter === "all" || kiemTraKhoangGia(giaDaiDien, priceFilter);
 
@@ -277,6 +389,109 @@ export function HomePage() {
     setTicketType("all");
     setCurrentPage(1);
   };
+
+  if (isOrganizer) {
+    return (
+      <div className="home-page">
+        <main className="home-main" id="trang-chu">
+          <section className="organizer-home">
+            <div className="organizer-home__head">
+              <div>
+                <p className="organizer-home__eyebrow">KHU VỰC NHÀ TỔ CHỨC</p>
+                <h1 className="organizer-home__title">Sự kiện của tôi</h1>
+                <p className="organizer-home__desc">
+                  Danh sách các sự kiện bạn đã tạo và trạng thái hiện tại của từng sự kiện.
+                </p>
+              </div>
+            </div>
+
+            {loadingMyEvents ? (
+              <div className="home-page__status">Đang tải sự kiện của bạn...</div>
+            ) : errorMyEvents ? (
+              <div className="home-page__status">{errorMyEvents}</div>
+            ) : !myEvents.length ? (
+              <div className="organizer-empty">
+                <h3>Bạn chưa có sự kiện nào</h3>
+                <p>Hãy vào mục “Tạo sự kiện” trên thanh điều hướng để bắt đầu tạo sự kiện mới.</p>
+              </div>
+            ) : (
+              <div className="organizer-grid">
+                {myEvents.map((event) => (
+                  <article key={event.eventId} className="organizer-card">
+                    <div className="organizer-card__imageWrap">
+                      {event.eventImgUrl ? (
+                        <img
+                          className="organizer-card__image"
+                          src={event.eventImgUrl}
+                          alt={`Ảnh sự kiện: ${event.eventName}`}
+                        />
+                      ) : (
+                        <div className="organizer-card__image organizer-card__image--empty">
+                          Không có ảnh
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="organizer-card__body">
+                      <div className="organizer-card__topRow">
+                        <div className="organizer-card__genre">
+                          {event.genre || "Sự kiện"}
+                        </div>
+
+                        <span className={`organizer-card__status ${layClassTrangThai(event.status)}`}>
+                          {layNhanTrangThai(event.status)}
+                        </span>
+                      </div>
+
+                      <h3 className="organizer-card__title">{event.eventName}</h3>
+
+                      <div className="organizer-card__meta">
+                        <div className="organizer-card__metaRow">
+                          <span>📅</span>
+                          <span>{dinhDangNgay(event.dateToStart)}</span>
+                        </div>
+
+                        <div className="organizer-card__metaRow">
+                          <span>📍</span>
+                          <span>{event.venue?.venueName || "Chưa có địa điểm"}</span>
+                        </div>
+
+                        <div className="organizer-card__metaRow">
+                          <span>🎫</span>
+                          <span>
+                            {Array.isArray(event.ticketClasses)
+                              ? `${event.ticketClasses.length} hạng vé`
+                              : "Chưa có hạng vé"}
+                          </span>
+                        </div>
+
+                        <div className="organizer-card__metaRow">
+                          <span>💳</span>
+                          <span>
+                            Từ {dinhDangVND(layGiaThapNhatTheoLoai(event.ticketClasses || []))}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="organizer-card__footer">
+                        <button
+                          type="button"
+                          className="home-btn home-btn--primary organizer-card__editBtn"
+                          onClick={() => alert(`Demo: Chỉnh sửa sự kiện "${event.eventName}"`)}
+                        >
+                          Chỉnh sửa sự kiện
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   if (loading.events) {
     return <div className="home-page home-page__status">Đang tải sự kiện...</div>;
