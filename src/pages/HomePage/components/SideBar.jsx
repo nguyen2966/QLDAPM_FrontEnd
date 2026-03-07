@@ -5,6 +5,7 @@ export function SideBar({
   setTicketType,
   priceOptions,
   typeOptions,
+  onClearFilters,
 }) {
   return (
     <aside className="home-sidebar" aria-label="Bộ lọc sự kiện">
@@ -43,6 +44,14 @@ export function SideBar({
           ))}
         </div>
       </div>
+
+      <button
+        className="home-btn home-btn--ghost home-sidebar__clear"
+        type="button"
+        onClick={onClearFilters}
+      >
+        Xoá bộ lọc
+      </button>
     </aside>
   );
 }

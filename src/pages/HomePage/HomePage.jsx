@@ -7,6 +7,8 @@ import { useAuth } from "../../hooks/useAuth.js";
 import { useData } from "../../hooks/useData.js";
 import { HeroSection } from "./components/HeroSection.jsx";
 import { UpcomingEvents } from "./components/UpComingEvents.jsx";
+import { EventGrid } from "./components/EventGrid.jsx";
+import { SideBar } from "./components/SideBar.jsx";
 
 const EVENTS_PER_PAGE = 8;
 
@@ -21,29 +23,11 @@ const PRICE_OPTIONS = [
 const TYPE_OPTIONS = [
   { value: "all", label: "Tất cả loại vé" },
   { value: "SEATED", label: "Ghế ngồi" },
-  { value: "STANDING", label: "Đứng" },
+  { value: "STANDING", label: "Ghế đứng" },
 ];
 
 function normalizeText(value) {
   return String(value || "").toLowerCase().trim();
-}
-
-function dinhDangVND(amount) {
-  return `${Number(amount || 0).toLocaleString("vi-VN")} VNĐ`;
-}
-
-function layGiaThapNhat(ticketClasses = []) {
-  if (!Array.isArray(ticketClasses) || ticketClasses.length === 0) return 0;
-  return Math.min(...ticketClasses.map((ticket) => Number(ticket.price || 0)));
-}
-
-function dinhDangNgay(isoString) {
-  if (!isoString) return "";
-  return new Date(isoString).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
 }
 
 function kiemTraKhoangGia(price, priceFilter) {
@@ -63,57 +47,20 @@ function kiemTraKhoangGia(price, priceFilter) {
   }
 }
 
-function EventCard({ event, onDatVe }) {
-  return (
-    <article className="home-card">
-      <div className="home-event-img" aria-label={event.eventName} role="img">
-        {event.eventImgUrl ? (
-          <img
-            className="home-event-img__photo"
-            src={event.eventImgUrl}
-            alt={`Ảnh sự kiện: ${event.eventName}`}
-          />
-        ) : null}
-      </div>
+function layDanhSachVeTheoLoai(ticketClasses = [], ticketType = "all") {
+  if (!Array.isArray(ticketClasses)) return [];
+  if (ticketType === "all") return ticketClasses;
 
-      <div className="home-card__body">
-        <div className="home-card__top">
-          <h3 className="home-card__title">{event.eventName}</h3>
-          <div className="home-card__tag">{event.genre || "Sự kiện"}</div>
-        </div>
-
-        <div className="home-card__meta">
-          <div className="home-card__metaRow home-card__metaRow--date">
-            <span className="home-card__metaIcon" aria-hidden="true">
-              📅
-            </span>
-            <span className="home-card__metaText">{dinhDangNgay(event.dateToStart)}</span>
-          </div>
-
-          <div className="home-card__metaRow home-card__metaRow--venue">
-            <span className="home-card__metaIcon" aria-hidden="true">
-              📍
-            </span>
-            <span className="home-card__metaText">{event.venue?.venueName || ""}</span>
-          </div>
-        </div>
-
-        <div className="home-card__bottom">
-          <div className="home-card__price">
-            Từ {dinhDangVND(layGiaThapNhat(event.ticketClasses))}
-          </div>
-
-          <button
-            className="home-btn home-btn--primary home-card__cta"
-            type="button"
-            onClick={() => onDatVe(event)}
-          >
-            Đặt vé
-          </button>
-        </div>
-      </div>
-    </article>
+  return ticketClasses.filter(
+    (ticket) => String(ticket?.type || "").toUpperCase() === ticketType
   );
+}
+
+function layGiaThapNhatTheoLoai(ticketClasses = [], ticketType = "all") {
+  const danhSachVe = layDanhSachVeTheoLoai(ticketClasses, ticketType);
+  if (!danhSachVe.length) return 0;
+
+  return Math.min(...danhSachVe.map((ticket) => Number(ticket?.price || 0)));
 }
 
 function Pagination({ currentPage, totalPages, onPageChange }) {
@@ -191,10 +138,7 @@ export function HomePage() {
   }, [events, featuredIndex]);
 
   const danhSachDiaDiem = useMemo(() => {
-    const allLocations = events
-      .map((event) => event.venue?.venueName)
-      .filter(Boolean);
-
+    const allLocations = events.map((event) => event.venue?.venueName).filter(Boolean);
     return ["all", ...new Set(allLocations)];
   }, [events]);
 
@@ -223,16 +167,26 @@ export function HomePage() {
       const matchLocation = diaDiem === "all" || event.venue?.venueName === diaDiem;
 
       const ticketClasses = Array.isArray(event.ticketClasses) ? event.ticketClasses : [];
+      const ticketClassesTheoLoai = layDanhSachVeTheoLoai(ticketClasses, ticketType);
 
       const matchType =
-        ticketType === "all" ||
-        ticketClasses.some((ticket) => String(ticket.type).toUpperCase() === ticketType);
+        ticketType === "all"
+          ? ticketClasses.length > 0
+          : ticketClassesTheoLoai.length > 0;
+
+      const giaDaiDien = layGiaThapNhatTheoLoai(ticketClasses, ticketType);
 
       const matchPrice =
-        priceFilter === "all" ||
-        ticketClasses.some((ticket) => kiemTraKhoangGia(Number(ticket.price || 0), priceFilter));
+        priceFilter === "all" || kiemTraKhoangGia(giaDaiDien, priceFilter);
 
-      return matchKeyword && matchGenre && matchDate && matchLocation && matchType && matchPrice;
+      return (
+        matchKeyword &&
+        matchGenre &&
+        matchDate &&
+        matchLocation &&
+        matchType &&
+        matchPrice
+      );
     });
   }, [events, tuKhoa, genre, ngay, diaDiem, priceFilter, ticketType]);
 
@@ -384,86 +338,44 @@ export function HomePage() {
               ))}
             </select>
 
-            <button className="home-btn home-btn--primary" type="button" onClick={handleSearchClick}>
+            <button
+              className="home-btn home-btn--primary"
+              type="button"
+              onClick={handleSearchClick}
+            >
               Tìm kiếm
             </button>
           </div>
         </section>
 
         <div className="home-content">
-          <aside className="home-sidebar" aria-label="Bộ lọc sự kiện">
-            <div className="home-sidebar__section">
-              <div className="home-sidebar__head">
-                <h3 className="home-sidebar__title">Lọc theo giá vé</h3>
-              </div>
-
-              <div className="home-sidebar__options">
-                {PRICE_OPTIONS.map((option) => (
-                  <label key={option.value} className="home-sidebar__option">
-                    <input
-                      type="radio"
-                      name="priceFilter"
-                      value={option.value}
-                      checked={priceFilter === option.value}
-                      onChange={(e) => handlePriceChange(e.target.value)}
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="home-sidebar__section">
-              <div className="home-sidebar__head">
-                <h3 className="home-sidebar__title">Lọc theo loại vé</h3>
-              </div>
-
-              <div className="home-sidebar__options">
-                {TYPE_OPTIONS.map((option) => (
-                  <label key={option.value} className="home-sidebar__option">
-                    <input
-                      type="radio"
-                      name="ticketType"
-                      value={option.value}
-                      checked={ticketType === option.value}
-                      onChange={(e) => handleTypeChange(e.target.value)}
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <button className="home-btn home-btn--ghost home-sidebar__clear" type="button" onClick={handleClearFilters}>
-              Xoá bộ lọc
-            </button>
-          </aside>
+          <SideBar
+            priceFilter={priceFilter}
+            setPriceFilter={handlePriceChange}
+            ticketType={ticketType}
+            setTicketType={handleTypeChange}
+            priceOptions={PRICE_OPTIONS}
+            typeOptions={TYPE_OPTIONS}
+            onClearFilters={handleClearFilters}
+          />
 
           <div className="home-content__main">
-            <section className="home-section" id="kham-pha">
-              <div className="home-section__head">
-                <h2 className="home-section__title">Khám phá sự kiện</h2>
-                <div className="home-section__hint">
-                  Có {suKienLoc.length} kết quả • Trang {safeCurrentPage}/{totalPages}
-                </div>
-              </div>
-
-              {!suKienPhanTrang.length ? (
-                <div className="home-empty-state">Không tìm thấy sự kiện phù hợp.</div>
-              ) : (
-                <div className="home-grid">
-                  {suKienPhanTrang.map((event) => (
-                    <EventCard key={event.eventId} event={event} onDatVe={datVe} />
-                  ))}
-                </div>
-              )}
-
-              <Pagination
+            <div id="kham-pha">
+              <EventGrid
+                events={suKienPhanTrang}
+                totalResults={suKienLoc.length}
                 currentPage={safeCurrentPage}
                 totalPages={totalPages}
-                onPageChange={handlePageChange}
+                onDatVe={datVe}
+                selectedTicketType={ticketType}
               />
-            </section>
+            </div>
+
+            <Pagination
+              currentPage={safeCurrentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
 
             <UpcomingEvents events={suKienSapDienRa} />
           </div>

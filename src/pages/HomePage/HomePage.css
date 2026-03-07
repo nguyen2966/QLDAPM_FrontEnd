@@ -377,7 +377,6 @@ html{
   flex:1;
 }
 
-/* title + tag đổi sang layout cột để hiện đủ chữ tốt hơn */
 .home-card__top{
   display:flex;
   flex-direction:column;
@@ -428,6 +427,10 @@ html{
 
 .home-card__metaRow--venue{
   min-height:52px;
+}
+
+.home-card__metaRow--ticket{
+  min-height:28px;
 }
 
 .home-card__metaIcon{
