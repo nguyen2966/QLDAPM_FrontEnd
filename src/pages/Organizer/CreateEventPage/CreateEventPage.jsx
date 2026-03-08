@@ -23,7 +23,7 @@ const STEP_META = [
     number: 3,
     eyebrow: "BƯỚC 3",
     title: "Sơ đồ chỗ ngồi",
-    description: "Gán hạng vé vào từng khu vực và lưu sơ đồ chỗ ngồi đúng format backend.",
+    description: "Gán hạng vé vào từng khu vực và lưu sơ đồ chỗ ngồi.",
   },
 ];
 
@@ -72,9 +72,7 @@ export const CreateEventPage = () => {
           <div>
             <p className="create-event-header__eyebrow">KHU VỰC NHÀ TỔ CHỨC</p>
             <h1 className="create-event-header__title">Tạo sự kiện</h1>
-            <p className="create-event-header__desc">
-              Hoàn tất 3 bước theo đúng API backend hiện tại.
-            </p>
+
           </div>
 
           <div className="create-event-header__actions">

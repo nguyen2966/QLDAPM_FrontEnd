@@ -106,7 +106,6 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
         <section className="create-event-section create-event-step2__form-box">
           <div className="create-event-section__title-wrap">
             <h3>Thêm hạng vé mới</h3>
-            <p>Tạo từng hạng vé ở cột trái rồi kiểm tra lại ở bảng bên phải.</p>
           </div>
 
           <div className="create-event-grid">
@@ -175,7 +174,7 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
           <div className="create-event-section__title-wrap create-event-section__title-wrap--inline">
             <div>
               <h3>Danh sách hạng vé</h3>
-              <p>{ticketClasses.length} hạng vé • Tổng quota: {totalQuota.toLocaleString("vi-VN")}</p>
+              <p>{ticketClasses.length} hạng vé • Tổng số vé: {totalQuota.toLocaleString("vi-VN")}</p>
             </div>
             <span className="create-event-badge">Sự kiện #{eventId}</span>
           </div>

@@ -399,9 +399,7 @@ export function HomePage() {
               <div>
                 <p className="organizer-home__eyebrow">KHU VỰC NHÀ TỔ CHỨC</p>
                 <h1 className="organizer-home__title">Sự kiện của tôi</h1>
-                <p className="organizer-home__desc">
-                  Danh sách các sự kiện bạn đã tạo và trạng thái hiện tại của từng sự kiện.
-                </p>
+
               </div>
             </div>
 

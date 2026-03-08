@@ -704,12 +704,6 @@ html{
   color: #111;
 }
 
-.organizer-home__desc {
-  margin: 10px 0 0;
-  color: rgba(0, 0, 0, 0.62);
-  font-weight: 600;
-  line-height: 1.6;
-}
 
 .organizer-grid {
   display: grid;
@@ -756,15 +750,18 @@ html{
 }
 
 .organizer-card__status {
-  position: absolute;
-  top: 14px;
-  left: 14px;
+  position: static;
+  top: auto;
+  left: auto;
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .organizer-card__status.is-approved {
