@@ -1,4 +1,3 @@
-import "./api/mockApi.js"
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
@@ -8,22 +7,19 @@ import { initFacebookSDK } from "./lib/facebook.js";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { DataProvider } from "./context/Data/DataProvider.jsx";
 
-  
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 initFacebookSDK().then(() => {
   console.log("Facebook SDK ready");
   createRoot(document.getElementById("root")).render(
-    
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <AuthProvider>
-          <BrowserRouter>
-           <DataProvider>
-             <App />
-           </DataProvider>
-          </BrowserRouter>
-        </AuthProvider>
-      </GoogleOAuthProvider>
-
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <BrowserRouter>
+          <DataProvider>
+            <App />
+          </DataProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 });
