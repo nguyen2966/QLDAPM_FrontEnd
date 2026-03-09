@@ -467,35 +467,7 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
     setError("");
   };
 
-  const moveSeatTo = (targetX, targetY) => {
-    if (!selectedBlock || !movingSeat) return;
 
-    const targetKey = seatKey(targetX, targetY);
-    if (occupiedMap.has(targetKey)) {
-      setError("Ô này đã có ghế. Hãy chọn một ô trống khác để dời ghế.");
-      return;
-    }
-
-    setBlocks((prev) =>
-      prev.map((block) => {
-        if (block.blockId !== selectedBlockId) return block;
-
-        return {
-          ...block,
-          seatPoints: normalizeSeatPoints(
-            (block.seatPoints || []).map((point) =>
-              point.x === movingSeat.x && point.y === movingSeat.y
-                ? { x: targetX, y: targetY }
-                : point
-            )
-          ),
-        };
-      })
-    );
-
-    setMovingSeat(null);
-    setError("");
-  };
 
   const handleDeleteSeat = useCallback((x, y) => {
     const ownerBlockId = occupiedMap.get(seatKey(x, y));
