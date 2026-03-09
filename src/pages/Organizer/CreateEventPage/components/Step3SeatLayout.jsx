@@ -578,55 +578,28 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, [finalizeAreaDraw, isDrawingArea]);
 
-  const handleSeatMouseDown = (x, y) => {
-    const ownerBlockId = occupiedMap.get(seatKey(x, y));
+const handleSeatMouseDown = (x, y) => {
+  const ownerBlockId = occupiedMap.get(seatKey(x, y));
 
-    if (movingSeat) {
-      if (!ownerBlockId) {
-        moveSeatTo(x, y);
-        return;
-      }
+  // Có ghế rồi => click 1 lần là xóa
+  if (ownerBlockId) {
+    handleDeleteSeat(x, y);
+    return;
+  }
 
-      if (ownerBlockId === selectedBlockId) {
-        setMovingSeat((prev) =>
-          prev?.x === x && prev?.y === y ? null : { x, y }
-        );
-        return;
-      }
+  if (!selectedBlock) return;
 
-      setSelectedBlockId(ownerBlockId);
-      setMovingSeat(null);
-      return;
-    }
+  if (selectedRemaining <= 0) {
+    setError("Khu đang chọn đã đủ ghế theo quota nên không thể thêm mới.");
+    return;
+  }
 
-    if (ownerBlockId && ownerBlockId !== selectedBlockId) {
-      setSelectedBlockId(ownerBlockId);
-      setDrawSelection(null);
-      setIsDrawingArea(false);
-      return;
-    }
-
-    if (ownerBlockId === selectedBlockId) {
-      setMovingSeat((prev) =>
-        prev?.x === x && prev?.y === y ? null : { x, y }
-      );
-      setError("");
-      return;
-    }
-
-    if (!selectedBlock) return;
-
-    if (selectedRemaining <= 0) {
-      setError("Khu đang chọn đã đủ ghế theo quota nên không thể thêm mới.");
-      return;
-    }
-
-    suppressMouseUpRef.current = true;
-    setMovingSeat(null);
-    setDrawSelection({ startX: x, startY: y, endX: x, endY: y });
-    setIsDrawingArea(true);
-    setError("");
-  };
+  suppressMouseUpRef.current = true;
+  setMovingSeat(null);
+  setDrawSelection({ startX: x, startY: y, endX: x, endY: y });
+  setIsDrawingArea(true);
+  setError("");
+};
 
   const handleSeatMouseEnter = (x, y) => {
     if (!isDrawingArea) return;
@@ -943,9 +916,8 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
                             : undefined
                         }
                         title={`Hàng ${y} • Cột ${x}${ownerBlock ? ` • ${ownerBlock.className}` : ""}`}
-                        onMouseDown={() => handleSeatMouseDown(x, y)}
-                        onMouseEnter={() => handleSeatMouseEnter(x, y)}
-                        onDoubleClick={() => handleDeleteSeat(x, y)}
+onMouseDown={() => handleSeatMouseDown(x, y)}
+onMouseEnter={() => handleSeatMouseEnter(x, y)}
                       >
                         <span className="sr-only">Ghế {x}-{y}</span>
                       </button>
