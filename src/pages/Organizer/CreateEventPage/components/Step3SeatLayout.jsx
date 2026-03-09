@@ -4,16 +4,17 @@ import { API } from "../../../../api/api.js";
 const CANVAS = {
   x: 0,
   y: 0,
-  width: 1600,
-  height: 920,
+  width: 1200,
+  height: 760,
   stageLabel: "SÂN KHẤU",
 };
 
-const GRID_ROWS = 80;
-const GRID_COLS = 125;
-const GRID_CAPACITY = GRID_ROWS * GRID_COLS;
-const BOARD_MARGIN = 2;
-const BLOCK_GAP = 3;
+const GRID_ROWS = 25;
+const GRID_COLS = 40;
+const GRID_CAPACITY = GRID_ROWS * GRID_COLS; // 1000
+const BOARD_MARGIN = 1;
+const BLOCK_GAP = 2;
+const CELL_SIZE = 16;
 
 function laPhanHoiThanhCong(response) {
   return response?.data?.status === "success";
@@ -59,8 +60,8 @@ function demSoGhe(block) {
 }
 
 function taoPhanBoMacDinh(ticketClasses = []) {
-  let cursorX = BOARD_MARGIN;
-  let cursorY = BOARD_MARGIN + 2;
+  let cursorX = BOARD_MARGIN + 1;
+  let cursorY = BOARD_MARGIN + 1;
   let bandHeight = 0;
 
   return ticketClasses.map((ticketClass, index) => {
@@ -70,30 +71,31 @@ function taoPhanBoMacDinh(ticketClasses = []) {
 
     if (quota > 0) {
       let cols = clamp(
-        Math.ceil(Math.sqrt(quota * 1.45)),
-        10,
-        Math.max(10, GRID_COLS - BOARD_MARGIN * 2)
+        Math.ceil(Math.sqrt(quota * 1.25)),
+        5,
+        Math.max(5, GRID_COLS - BOARD_MARGIN * 2)
       );
       let rows = Math.ceil(quota / cols);
 
       if (cursorX + cols > GRID_COLS - BOARD_MARGIN + 1) {
-        cursorX = BOARD_MARGIN;
+        cursorX = BOARD_MARGIN + 1;
         cursorY += bandHeight + BLOCK_GAP;
         bandHeight = 0;
       }
 
       if (cursorY + rows > GRID_ROWS - BOARD_MARGIN + 1) {
-        cursorX = BOARD_MARGIN;
-        cursorY = BOARD_MARGIN;
+        cursorX = BOARD_MARGIN + 1;
+        cursorY = BOARD_MARGIN + 1;
         bandHeight = 0;
-        cols = Math.min(cols, GRID_COLS - BOARD_MARGIN * 2 + 1);
-        rows = Math.ceil(quota / cols);
+        cols = Math.min(cols, GRID_COLS - BOARD_MARGIN * 2);
+        rows = Math.ceil(quota / Math.max(cols, 1));
       }
 
       for (let i = 0; i < quota; i += 1) {
         const x = cursorX + (i % cols);
         const y = cursorY + Math.floor(i / cols);
-        if (x > GRID_COLS - BOARD_MARGIN + 1 || y > GRID_ROWS - BOARD_MARGIN + 1) break;
+
+        if (x > GRID_COLS - BOARD_MARGIN || y > GRID_ROWS - BOARD_MARGIN) break;
         points.push({ x, y });
       }
 
@@ -137,14 +139,13 @@ function taoGheTuLayoutDaLuu(savedBlock, layoutPayload) {
   );
 
   const startCol = clamp(
-    Math.round((Number(savedBlock?.position?.x || 0) / Math.max(savedCanvasWidth, 1)) * savedGridCols) +
-      1,
+    Math.round((Number(savedBlock?.position?.x || 0) / Math.max(savedCanvasWidth, 1)) * savedGridCols) + 1,
     1,
     GRID_COLS
   );
+
   const startRow = clamp(
-    Math.round((Number(savedBlock?.position?.y || 0) / Math.max(savedCanvasHeight, 1)) * savedGridRows) +
-      1,
+    Math.round((Number(savedBlock?.position?.y || 0) / Math.max(savedCanvasHeight, 1)) * savedGridRows) + 1,
     1,
     GRID_ROWS
   );
@@ -197,6 +198,7 @@ function taoPayloadChoBlock(block) {
     for (let col = 1; col <= cols; col += 1) {
       const globalX = minX + col - 1;
       const globalY = minY + row - 1;
+
       if (!occupied.has(seatKey(globalX, globalY))) {
         deletedSeats.push({ row, col });
       }
@@ -368,6 +370,14 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
     return map;
   }, [blocks]);
 
+  const ownerBlockMap = useMemo(() => {
+    const map = new Map();
+    blocks.forEach((block) => {
+      map.set(block.blockId, block);
+    });
+    return map;
+  }, [blocks]);
+
   const totalQuota = useMemo(
     () => ticketClasses.reduce((sum, ticketClass) => sum + Number(ticketClass.quota || 0), 0),
     [ticketClasses]
@@ -398,11 +408,11 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
     return map;
   }, [drawSelection, occupiedMap, selectedBlock, selectedRemaining]);
 
-const updateSelectedBlock = useCallback((updater) => {
-  setBlocks((prev) =>
-    prev.map((block) => (block.blockId === selectedBlockId ? updater(block) : block))
-  );
-}, [selectedBlockId]);
+  const updateSelectedBlock = useCallback((updater) => {
+    setBlocks((prev) =>
+      prev.map((block) => (block.blockId === selectedBlockId ? updater(block) : block))
+    );
+  }, [selectedBlockId]);
 
   const handleBlockFieldChange = (event) => {
     const { name, value } = event.target;
@@ -412,6 +422,7 @@ const updateSelectedBlock = useCallback((updater) => {
         const nextTicketClass = ticketClasses.find(
           (ticketClass) => String(ticketClass.ticketClassId) === String(value)
         );
+
         if (!nextTicketClass) return block;
 
         return {
@@ -511,47 +522,47 @@ const updateSelectedBlock = useCallback((updater) => {
     setSuccessMessage("");
   }, [movingSeat, occupiedMap]);
 
-const finalizeAreaDraw = useCallback(() => {
-  if (!isDrawingArea || !drawSelection || !selectedBlock) {
+  const finalizeAreaDraw = useCallback(() => {
+    if (!isDrawingArea || !drawSelection || !selectedBlock) {
+      setIsDrawingArea(false);
+      setDrawSelection(null);
+      return;
+    }
+
+    const seatsCanAdd = Math.max(0, Number(selectedBlock.quota || 0) - demSoGhe(selectedBlock));
+
+    if (!seatsCanAdd) {
+      setError("Hạng vé này đã đủ số ghế theo quota. Bạn chỉ có thể dời hoặc xóa ghế hiện có.");
+      setIsDrawingArea(false);
+      setDrawSelection(null);
+      return;
+    }
+
+    const candidates = taoDanhSachOTrongKhung(drawSelection, occupiedMap);
+    const seatsToAdd = candidates.slice(0, seatsCanAdd);
+
+    if (!seatsToAdd.length) {
+      setIsDrawingArea(false);
+      setDrawSelection(null);
+      return;
+    }
+
+    updateSelectedBlock((block) => ({
+      ...block,
+      seatPoints: normalizeSeatPoints([...(block.seatPoints || []), ...seatsToAdd]),
+    }));
+
+    if (candidates.length > seatsCanAdd) {
+      setError(
+        `Khu này chỉ còn thiếu ${seatsCanAdd.toLocaleString("vi-VN")} ghế nên hệ thống chỉ thêm đủ quota trong vùng bạn vừa vẽ.`
+      );
+    } else {
+      setError("");
+    }
+
     setIsDrawingArea(false);
     setDrawSelection(null);
-    return;
-  }
-
-  const seatsCanAdd = Math.max(0, Number(selectedBlock.quota || 0) - demSoGhe(selectedBlock));
-
-  if (!seatsCanAdd) {
-    setError("Hạng vé này đã đủ số ghế theo quota. Bạn chỉ có thể dời hoặc xóa ghế hiện có.");
-    setIsDrawingArea(false);
-    setDrawSelection(null);
-    return;
-  }
-
-  const candidates = taoDanhSachOTrongKhung(drawSelection, occupiedMap);
-  const seatsToAdd = candidates.slice(0, seatsCanAdd);
-
-  if (!seatsToAdd.length) {
-    setIsDrawingArea(false);
-    setDrawSelection(null);
-    return;
-  }
-
-  updateSelectedBlock((block) => ({
-    ...block,
-    seatPoints: normalizeSeatPoints([...(block.seatPoints || []), ...seatsToAdd]),
-  }));
-
-  if (candidates.length > seatsCanAdd) {
-    setError(
-      `Khu này chỉ còn thiếu ${seatsCanAdd.toLocaleString("vi-VN")} ghế nên hệ thống chỉ thêm đủ quota trong vùng bạn vừa vẽ.`
-    );
-  } else {
-    setError("");
-  }
-
-  setIsDrawingArea(false);
-  setDrawSelection(null);
-}, [drawSelection, isDrawingArea, occupiedMap, selectedBlock, updateSelectedBlock]);
+  }, [drawSelection, isDrawingArea, occupiedMap, selectedBlock, updateSelectedBlock]);
 
   useEffect(() => {
     if (!isDrawingArea) return undefined;
@@ -578,12 +589,7 @@ const finalizeAreaDraw = useCallback(() => {
 
       if (ownerBlockId === selectedBlockId) {
         setMovingSeat((prev) =>
-          prev?.x === x && prev?.y === y
-            ? null
-            : {
-                x,
-                y,
-              }
+          prev?.x === x && prev?.y === y ? null : { x, y }
         );
         return;
       }
@@ -602,12 +608,7 @@ const finalizeAreaDraw = useCallback(() => {
 
     if (ownerBlockId === selectedBlockId) {
       setMovingSeat((prev) =>
-        prev?.x === x && prev?.y === y
-          ? null
-          : {
-              x,
-              y,
-            }
+        prev?.x === x && prev?.y === y ? null : { x, y }
       );
       setError("");
       return;
@@ -694,7 +695,6 @@ const finalizeAreaDraw = useCallback(() => {
       <div className="create-event-step3__toolbar create-event-step3__toolbar--arena">
         <div>
           <h3>Thiết lập sơ đồ chỗ ngồi</h3>
-
         </div>
 
         <div className="create-event-step3__toolbar-actions">
@@ -706,6 +706,7 @@ const finalizeAreaDraw = useCallback(() => {
           >
             Đặt lại sơ đồ
           </button>
+
           <button type="submit" className="create-event-button" disabled={loading || submitting}>
             {submitting ? "Đang lưu..." : "Lưu sơ đồ"}
           </button>
@@ -728,7 +729,6 @@ const finalizeAreaDraw = useCallback(() => {
             <section className="create-event-section create-event-section--mockup create-event-step3__ticket-strip">
               <div className="create-event-section__title-wrap">
                 <h3>Danh sách khu / hạng vé</h3>
-
               </div>
 
               <div className="create-event-block-list create-event-block-list--top">
@@ -753,8 +753,8 @@ const finalizeAreaDraw = useCallback(() => {
                       <div>
                         <strong>{block.blockName}</strong>
                         <small>
-                          {block.className} • {nhanLoaiVe(block.type)} • {seatCount.toLocaleString("vi-VN")} /
-                          {` ${Number(block.quota || 0).toLocaleString("vi-VN")} ghế`}
+                          {block.className} • {nhanLoaiVe(block.type)} • {seatCount.toLocaleString("vi-VN")} /{" "}
+                          {Number(block.quota || 0).toLocaleString("vi-VN")} ghế
                         </small>
                       </div>
                     </button>
@@ -767,7 +767,6 @@ const finalizeAreaDraw = useCallback(() => {
               <section className="create-event-section create-event-section--mockup create-event-step3__config-card">
                 <div className="create-event-section__title-wrap">
                   <h3>Tùy chỉnh khu đang chọn</h3>
-                  
                 </div>
 
                 {selectedBlock ? (
@@ -834,6 +833,7 @@ const finalizeAreaDraw = useCallback(() => {
                       >
                         Xóa toàn bộ ghế khu này
                       </button>
+
                       {movingSeat ? (
                         <button
                           type="button"
@@ -853,7 +853,6 @@ const finalizeAreaDraw = useCallback(() => {
               <section className="create-event-section create-event-section--mockup create-event-step3__legend-card">
                 <div className="create-event-section__title-wrap">
                   <h3>Chú thích và thống kê</h3>
-                  
                 </div>
 
                 <div className="create-event-legend create-event-legend--grid">
@@ -863,9 +862,8 @@ const finalizeAreaDraw = useCallback(() => {
                       <div>
                         <strong>{ticketClass.className}</strong>
                         <small>
-                          #{ticketClass.ticketClassId} • {nhanLoaiVe(ticketClass.type)} • {Number(
-                            ticketClass.price
-                          ).toLocaleString("vi-VN")} VNĐ
+                          #{ticketClass.ticketClassId} • {nhanLoaiVe(ticketClass.type)} •{" "}
+                          {Number(ticketClass.price).toLocaleString("vi-VN")} VNĐ
                         </small>
                       </div>
                     </div>
@@ -900,9 +898,8 @@ const finalizeAreaDraw = useCallback(() => {
                 Khu đang chọn: <strong>{selectedBlock?.blockName || "Chưa chọn"}</strong>
               </span>
               <span>
-                <strong>{selectedSeatCount.toLocaleString("vi-VN")}</strong> / {Number(
-                  selectedBlock?.quota || 0
-                ).toLocaleString("vi-VN")} ghế của khu này
+                <strong>{selectedSeatCount.toLocaleString("vi-VN")}</strong> /{" "}
+                {Number(selectedBlock?.quota || 0).toLocaleString("vi-VN")} ghế của khu này
               </span>
               <span>
                 {movingSeat
@@ -915,14 +912,14 @@ const finalizeAreaDraw = useCallback(() => {
               <div className="create-event-canvas__board create-event-canvas__board--grid create-event-canvas__board--arena">
                 <div
                   className="create-event-seat-grid create-event-seat-grid--arena"
-                  style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 7px)` }}
+                  style={{ gridTemplateColumns: `repeat(${GRID_COLS}, ${CELL_SIZE}px)` }}
                 >
                   {Array.from({ length: GRID_ROWS * GRID_COLS }, (_, index) => {
                     const x = (index % GRID_COLS) + 1;
                     const y = Math.floor(index / GRID_COLS) + 1;
                     const key = seatKey(x, y);
                     const ownerBlockId = occupiedMap.get(key);
-                    const ownerBlock = blocks.find((block) => block.blockId === ownerBlockId);
+                    const ownerBlock = ownerBlockMap.get(ownerBlockId);
                     const isActiveBlock = ownerBlockId === selectedBlockId;
                     const isMovingSeat = movingSeat?.x === x && movingSeat?.y === y;
                     const isPreview = previewCells.has(key);
