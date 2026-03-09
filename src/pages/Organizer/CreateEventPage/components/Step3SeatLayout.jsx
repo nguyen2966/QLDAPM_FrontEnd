@@ -1,34 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API } from "../../../../api/api.js";
 
 const CANVAS = {
   x: 0,
   y: 0,
-  width: 1200,
-  height: 780,
+  width: 1600,
+  height: 920,
   stageLabel: "SÂN KHẤU",
 };
 
-const GRID_ROWS = 30;
-const GRID_COLS = 40;
+const GRID_ROWS = 80;
+const GRID_COLS = 125;
 const GRID_CAPACITY = GRID_ROWS * GRID_COLS;
-
-const SEAT_PRESETS = [
-  { row: 4, col: 4, cols: 14 },
-  { row: 4, col: 23, cols: 14 },
-  { row: 17, col: 4, cols: 14 },
-  { row: 17, col: 23, cols: 14 },
-];
-
-const STANDING_PRESETS = [
-  { x: 6, y: 77, width: 18, height: 12 },
-  { x: 28, y: 77, width: 18, height: 12 },
-  { x: 50, y: 77, width: 18, height: 12 },
-  { x: 72, y: 77, width: 18, height: 12 },
-];
+const BOARD_MARGIN = 2;
+const BLOCK_GAP = 3;
 
 function laPhanHoiThanhCong(response) {
   return response?.data?.status === "success";
+}
+
+function seatKey(x, y) {
+  return `${x}-${y}`;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function nhanLoaiVe(type) {
+  return type === "STANDING" ? "Ghế đứng" : "Ghế ngồi";
 }
 
 function taoTienToMaKhu(className = "") {
@@ -42,72 +42,64 @@ function taoTienToMaKhu(className = "") {
   return cleaned || "KHU";
 }
 
-function seatKey(x, y) {
-  return `${x}-${y}`;
-}
-
-function nhanLoaiVe(type) {
-  return type === "STANDING" ? "Ghế đứng" : "Ghế ngồi";
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function normalizeSeatPoints(points = []) {
-  const unique = new Map();
+  const map = new Map();
 
-  for (const point of points) {
+  points.forEach((point) => {
     const x = clamp(Number(point?.x || 0), 1, GRID_COLS);
     const y = clamp(Number(point?.y || 0), 1, GRID_ROWS);
-    unique.set(seatKey(x, y), { x, y });
-  }
+    map.set(seatKey(x, y), { x, y });
+  });
 
-  return Array.from(unique.values()).sort((a, b) => a.y - b.y || a.x - b.x);
+  return Array.from(map.values()).sort((a, b) => a.y - b.y || a.x - b.x);
 }
 
 function demSoGhe(block) {
-  return block?.type === "SEATED" ? normalizeSeatPoints(block?.seatPoints).length : Number(block?.quota || 0);
+  return normalizeSeatPoints(block?.seatPoints).length;
 }
 
-function taoGheMacDinh(quota, index) {
-  const soLuong = clamp(Number(quota || 0), 0, GRID_CAPACITY);
-  if (!soLuong) return [];
-
-  const preset = SEAT_PRESETS[index % SEAT_PRESETS.length] ?? {
-    row: 4,
-    col: 4,
-    cols: 14,
-  };
-
-  const startRowShift = Math.floor(index / SEAT_PRESETS.length) * 2;
-  const maxCols = clamp(Number(preset.cols || 14), 8, 18);
-  const points = [];
-
-  for (let i = 0; i < soLuong; i += 1) {
-    const x = preset.col + (i % maxCols);
-    const y = preset.row + startRowShift + Math.floor(i / maxCols);
-
-    if (x > GRID_COLS || y > GRID_ROWS) break;
-    points.push({ x, y });
-  }
-
-  return normalizeSeatPoints(points);
-}
-
-function buildDefaultBlocks(ticketClasses = []) {
-  let standingIndex = 0;
+function taoPhanBoMacDinh(ticketClasses = []) {
+  let cursorX = BOARD_MARGIN;
+  let cursorY = BOARD_MARGIN + 2;
+  let bandHeight = 0;
 
   return ticketClasses.map((ticketClass, index) => {
+    const quota = clamp(Number(ticketClass.quota || 0), 0, GRID_CAPACITY);
     const kyTu = String.fromCharCode(65 + index);
-    const isStanding = ticketClass.type === "STANDING";
-    const standingPreset =
-      STANDING_PRESETS[standingIndex++] ?? {
-        x: 8 + (index % 3) * 24,
-        y: 77,
-        width: 18,
-        height: 12,
-      };
+    const points = [];
+
+    if (quota > 0) {
+      let cols = clamp(
+        Math.ceil(Math.sqrt(quota * 1.45)),
+        10,
+        Math.max(10, GRID_COLS - BOARD_MARGIN * 2)
+      );
+      let rows = Math.ceil(quota / cols);
+
+      if (cursorX + cols > GRID_COLS - BOARD_MARGIN + 1) {
+        cursorX = BOARD_MARGIN;
+        cursorY += bandHeight + BLOCK_GAP;
+        bandHeight = 0;
+      }
+
+      if (cursorY + rows > GRID_ROWS - BOARD_MARGIN + 1) {
+        cursorX = BOARD_MARGIN;
+        cursorY = BOARD_MARGIN;
+        bandHeight = 0;
+        cols = Math.min(cols, GRID_COLS - BOARD_MARGIN * 2 + 1);
+        rows = Math.ceil(quota / cols);
+      }
+
+      for (let i = 0; i < quota; i += 1) {
+        const x = cursorX + (i % cols);
+        const y = cursorY + Math.floor(i / cols);
+        if (x > GRID_COLS - BOARD_MARGIN + 1 || y > GRID_ROWS - BOARD_MARGIN + 1) break;
+        points.push({ x, y });
+      }
+
+      bandHeight = Math.max(bandHeight, rows);
+      cursorX += cols + BLOCK_GAP;
+    }
 
     return {
       blockId: `${taoTienToMaKhu(ticketClass.className)}-${kyTu}`,
@@ -117,33 +109,26 @@ function buildDefaultBlocks(ticketClasses = []) {
       type: ticketClass.type,
       color: ticketClass.color,
       price: Number(ticketClass.price || 0),
-      quota: Number(ticketClass.quota || 0),
-      seatPoints: isStanding ? [] : taoGheMacDinh(ticketClass.quota, index),
-      zone: isStanding
-        ? { ...standingPreset }
-        : { x: 0, y: 0, width: 0, height: 0 },
+      quota,
+      seatPoints: normalizeSeatPoints(points),
+      defaultIndex: index,
     };
   });
 }
 
-function chuyenPxThanhPhanTram(value, fullSize) {
-  if (!fullSize) return 0;
-  return Math.round((Number(value || 0) / fullSize) * 1000) / 10;
-}
-
-function chuyenPhanTramThanhPx(value, fullSize) {
-  return Math.round((Number(value || 0) / 100) * fullSize);
-}
-
-function taoGheTuLayoutCu(savedBlock) {
-  const rows = Number(savedBlock?.rows || 0);
-  const cols = Number(savedBlock?.cols || 0);
-
-  if (!rows || !cols) return [];
-
+function taoGheTuLayoutDaLuu(savedBlock, layoutPayload) {
   if (Array.isArray(savedBlock?.seats) && savedBlock.seats.length) {
     return normalizeSeatPoints(savedBlock.seats);
   }
+
+  const rows = Number(savedBlock?.rows || 0);
+  const cols = Number(savedBlock?.cols || 0);
+  if (!rows || !cols) return [];
+
+  const savedCanvasWidth = Number(layoutPayload?.canvas?.width || CANVAS.width);
+  const savedCanvasHeight = Number(layoutPayload?.canvas?.height || CANVAS.height);
+  const savedGridCols = Number(layoutPayload?.grid?.cols || GRID_COLS);
+  const savedGridRows = Number(layoutPayload?.grid?.rows || GRID_ROWS);
 
   const deletedSet = new Set(
     Array.isArray(savedBlock?.deletedSeats)
@@ -151,82 +136,35 @@ function taoGheTuLayoutCu(savedBlock) {
       : []
   );
 
-  const cellWidth = CANVAS.width / GRID_COLS;
-  const cellHeight = CANVAS.height / GRID_ROWS;
-  const startCol = clamp(Math.floor(Number(savedBlock?.position?.x || 0) / cellWidth) + 1, 1, GRID_COLS);
-  const startRow = clamp(Math.floor(Number(savedBlock?.position?.y || 0) / cellHeight) + 1, 1, GRID_ROWS);
+  const startCol = clamp(
+    Math.round((Number(savedBlock?.position?.x || 0) / Math.max(savedCanvasWidth, 1)) * savedGridCols) +
+      1,
+    1,
+    GRID_COLS
+  );
+  const startRow = clamp(
+    Math.round((Number(savedBlock?.position?.y || 0) / Math.max(savedCanvasHeight, 1)) * savedGridRows) +
+      1,
+    1,
+    GRID_ROWS
+  );
 
-  const seatPoints = [];
+  const points = [];
 
   for (let row = 1; row <= rows; row += 1) {
     for (let col = 1; col <= cols; col += 1) {
       if (deletedSet.has(`${row}-${col}`)) continue;
-
       const x = startCol + col - 1;
       const y = startRow + row - 1;
       if (x > GRID_COLS || y > GRID_ROWS) continue;
-
-      seatPoints.push({ x, y });
+      points.push({ x, y });
     }
   }
 
-  return normalizeSeatPoints(seatPoints);
-}
-
-function buildBlocksFromSavedLayout(ticketClasses = [], layoutPayload) {
-  const defaultBlocks = buildDefaultBlocks(ticketClasses);
-  const savedBlocks = Array.isArray(layoutPayload?.seatLayout) ? layoutPayload.seatLayout : [];
-
-  return defaultBlocks.map((block, index) => {
-    const savedBlock = savedBlocks.find(
-      (item) => String(item.ticketClassId) === String(block.ticketClassId)
-    );
-
-    if (!savedBlock) return block;
-
-    if (block.type === "STANDING") {
-      return {
-        ...block,
-        blockId: savedBlock.blockId || block.blockId,
-        blockName: savedBlock.blockName || block.blockName,
-        zone: {
-          x: chuyenPxThanhPhanTram(savedBlock?.position?.x, CANVAS.width),
-          y: chuyenPxThanhPhanTram(savedBlock?.position?.y, CANVAS.height),
-          width: chuyenPxThanhPhanTram(savedBlock?.position?.width, CANVAS.width),
-          height: chuyenPxThanhPhanTram(savedBlock?.position?.height, CANVAS.height),
-        },
-      };
-    }
-
-    return {
-      ...block,
-      blockId: savedBlock.blockId || block.blockId,
-      blockName: savedBlock.blockName || block.blockName,
-      seatPoints: taoGheTuLayoutCu(savedBlock),
-      zone: block.zone,
-      defaultIndex: index,
-    };
-  });
+  return normalizeSeatPoints(points);
 }
 
 function taoPayloadChoBlock(block) {
-  if (block.type === "STANDING") {
-    return {
-      blockId: String(block.blockId || "").trim(),
-      blockName: String(block.blockName || "").trim(),
-      ticketClassId: Number(block.ticketClassId),
-      rows: 0,
-      cols: 0,
-      deletedSeats: [],
-      position: {
-        x: chuyenPhanTramThanhPx(block.zone?.x, CANVAS.width),
-        y: chuyenPhanTramThanhPx(block.zone?.y, CANVAS.height),
-        width: chuyenPhanTramThanhPx(block.zone?.width, CANVAS.width),
-        height: chuyenPhanTramThanhPx(block.zone?.height, CANVAS.height),
-      },
-    };
-  }
-
   const seatPoints = normalizeSeatPoints(block.seatPoints);
 
   if (!seatPoints.length) {
@@ -234,6 +172,7 @@ function taoPayloadChoBlock(block) {
       blockId: String(block.blockId || "").trim(),
       blockName: String(block.blockName || "").trim(),
       ticketClassId: Number(block.ticketClassId),
+      type: block.type,
       rows: 0,
       cols: 0,
       deletedSeats: [],
@@ -258,7 +197,6 @@ function taoPayloadChoBlock(block) {
     for (let col = 1; col <= cols; col += 1) {
       const globalX = minX + col - 1;
       const globalY = minY + row - 1;
-
       if (!occupied.has(seatKey(globalX, globalY))) {
         deletedSeats.push({ row, col });
       }
@@ -269,6 +207,7 @@ function taoPayloadChoBlock(block) {
     blockId: String(block.blockId || "").trim(),
     blockName: String(block.blockName || "").trim(),
     ticketClassId: Number(block.ticketClassId),
+    type: block.type,
     rows,
     cols,
     deletedSeats,
@@ -303,6 +242,55 @@ function buildLayoutPayload(blocks) {
   };
 }
 
+function buildDefaultBlocks(ticketClasses = []) {
+  return taoPhanBoMacDinh(ticketClasses);
+}
+
+function buildBlocksFromSavedLayout(ticketClasses = [], layoutPayload) {
+  const defaultBlocks = buildDefaultBlocks(ticketClasses);
+  const savedBlocks = Array.isArray(layoutPayload?.seatLayout) ? layoutPayload.seatLayout : [];
+
+  return defaultBlocks.map((block, index) => {
+    const savedBlock = savedBlocks.find(
+      (item) => String(item.ticketClassId) === String(block.ticketClassId)
+    );
+
+    if (!savedBlock) return block;
+
+    const savedSeats = taoGheTuLayoutDaLuu(savedBlock, layoutPayload);
+
+    return {
+      ...block,
+      blockId: savedBlock.blockId || block.blockId,
+      blockName: savedBlock.blockName || block.blockName,
+      seatPoints: savedSeats.length
+        ? savedSeats.slice(0, Number(block.quota || 0))
+        : defaultBlocks[index]?.seatPoints || [],
+      defaultIndex: index,
+    };
+  });
+}
+
+function taoDanhSachOTrongKhung(selection, occupiedMap) {
+  if (!selection) return [];
+
+  const minX = Math.max(1, Math.min(selection.startX, selection.endX));
+  const maxX = Math.min(GRID_COLS, Math.max(selection.startX, selection.endX));
+  const minY = Math.max(1, Math.min(selection.startY, selection.endY));
+  const maxY = Math.min(GRID_ROWS, Math.max(selection.startY, selection.endY));
+
+  const cells = [];
+  for (let y = minY; y <= maxY; y += 1) {
+    for (let x = minX; x <= maxX; x += 1) {
+      if (!occupiedMap.has(seatKey(x, y))) {
+        cells.push({ x, y });
+      }
+    }
+  }
+
+  return cells;
+}
+
 export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
   const [ticketClasses, setTicketClasses] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -312,11 +300,14 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [drawSelection, setDrawSelection] = useState(null);
+  const [isDrawingArea, setIsDrawingArea] = useState(false);
+  const suppressMouseUpRef = useRef(false);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!eventId) {
-        setError("Thiếu eventId để tải sơ đồ chỗ ngồi.");
+        setError("Thiếu mã sự kiện để tải sơ đồ chỗ ngồi.");
         setLoading(false);
         return;
       }
@@ -332,7 +323,7 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
         ]);
 
         if (!laPhanHoiThanhCong(ticketClassResponse)) {
-          setError("Không lấy được danh sách hạng vé cho bước 3.");
+          setError("Không lấy được danh sách hạng vé.");
           setLoading(false);
           return;
         }
@@ -358,6 +349,8 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
 
   useEffect(() => {
     setMovingSeat(null);
+    setDrawSelection(null);
+    setIsDrawingArea(false);
   }, [selectedBlockId]);
 
   const selectedBlock = useMemo(
@@ -367,41 +360,49 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
 
   const occupiedMap = useMemo(() => {
     const map = new Map();
-
     blocks.forEach((block) => {
-      if (block.type !== "SEATED") return;
       normalizeSeatPoints(block.seatPoints).forEach((point) => {
         map.set(seatKey(point.x, point.y), block.blockId);
       });
     });
-
     return map;
   }, [blocks]);
 
-  const mismatchBlocks = useMemo(
-    () =>
-      blocks.filter(
-        (block) => block.type === "SEATED" && demSoGhe(block) !== Number(block.quota || 0)
-      ),
-    [blocks]
-  );
-
-  const totalSeatedQuota = useMemo(
-    () =>
-      ticketClasses
-        .filter((ticketClass) => ticketClass.type === "SEATED")
-        .reduce((sum, ticketClass) => sum + Number(ticketClass.quota || 0), 0),
+  const totalQuota = useMemo(
+    () => ticketClasses.reduce((sum, ticketClass) => sum + Number(ticketClass.quota || 0), 0),
     [ticketClasses]
   );
 
-  const selectedSeatCount = useMemo(() => demSoGhe(selectedBlock), [selectedBlock]);
-  const overCapacity = totalSeatedQuota > GRID_CAPACITY;
+  const placedSeats = useMemo(
+    () => blocks.reduce((sum, block) => sum + demSoGhe(block), 0),
+    [blocks]
+  );
 
-  const updateSelectedBlock = (updater) => {
-    setBlocks((prev) =>
-      prev.map((block) => (block.blockId === selectedBlockId ? updater(block) : block))
-    );
-  };
+  const mismatchBlocks = useMemo(
+    () => blocks.filter((block) => demSoGhe(block) !== Number(block.quota || 0)),
+    [blocks]
+  );
+
+  const selectedSeatCount = useMemo(() => demSoGhe(selectedBlock), [selectedBlock]);
+  const selectedRemaining = Math.max(0, Number(selectedBlock?.quota || 0) - selectedSeatCount);
+  const overCapacity = totalQuota > GRID_CAPACITY;
+
+  const previewCells = useMemo(() => {
+    const map = new Set();
+    if (!drawSelection || !selectedBlock) return map;
+
+    taoDanhSachOTrongKhung(drawSelection, occupiedMap)
+      .slice(0, selectedRemaining)
+      .forEach((cell) => map.add(seatKey(cell.x, cell.y)));
+
+    return map;
+  }, [drawSelection, occupiedMap, selectedBlock, selectedRemaining]);
+
+const updateSelectedBlock = useCallback((updater) => {
+  setBlocks((prev) =>
+    prev.map((block) => (block.blockId === selectedBlockId ? updater(block) : block))
+  );
+}, [selectedBlockId]);
 
   const handleBlockFieldChange = (event) => {
     const { name, value } = event.target;
@@ -411,36 +412,20 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
         const nextTicketClass = ticketClasses.find(
           (ticketClass) => String(ticketClass.ticketClassId) === String(value)
         );
-
         if (!nextTicketClass) return block;
-
-        const nextType = nextTicketClass.type;
-        const nextQuota = Number(nextTicketClass.quota || 0);
-        const selectedIndex = Math.max(
-          0,
-          blocks.findIndex((item) => item.blockId === block.blockId)
-        );
 
         return {
           ...block,
           ticketClassId: nextTicketClass.ticketClassId,
           className: nextTicketClass.className,
-          type: nextType,
+          type: nextTicketClass.type,
           color: nextTicketClass.color,
           price: Number(nextTicketClass.price || 0),
-          quota: nextQuota,
-          seatPoints:
-            nextType === "SEATED"
-              ? block.type === "SEATED" && block.seatPoints.length
-                ? normalizeSeatPoints(block.seatPoints).slice(0, nextQuota)
-                : taoGheMacDinh(nextQuota, selectedIndex)
-              : [],
-          zone:
-            nextType === "STANDING"
-              ? block.zone?.width
-                ? block.zone
-                : { x: 8, y: 77, width: 18, height: 12 }
-              : { x: 0, y: 0, width: 0, height: 0 },
+          quota: Number(nextTicketClass.quota || 0),
+          seatPoints: normalizeSeatPoints(block.seatPoints || []).slice(
+            0,
+            Number(nextTicketClass.quota || 0)
+          ),
         };
       }
 
@@ -451,59 +436,31 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
     });
   };
 
-  const handleStandingZoneChange = (event) => {
-    const { name, value } = event.target;
-
-    updateSelectedBlock((block) => ({
-      ...block,
-      zone: {
-        ...block.zone,
-        [name]: Number(value),
-      },
-    }));
-  };
-
   const handleResetLayout = () => {
     const defaultBlocks = buildDefaultBlocks(ticketClasses);
     setBlocks(defaultBlocks);
     setSelectedBlockId(defaultBlocks[0]?.blockId ?? "");
     setMovingSeat(null);
+    setDrawSelection(null);
+    setIsDrawingArea(false);
+    setError("");
     setSuccessMessage("");
+  };
+
+  const handleClearSelectedBlock = () => {
+    if (!selectedBlock) return;
+    updateSelectedBlock((block) => ({ ...block, seatPoints: [] }));
+    setMovingSeat(null);
+    setDrawSelection(null);
+    setIsDrawingArea(false);
     setError("");
   };
 
-  const themGheVaoKhuDangChon = (x, y) => {
-    if (!selectedBlock || selectedBlock.type !== "SEATED") return;
+  const moveSeatTo = (targetX, targetY) => {
+    if (!selectedBlock || !movingSeat) return;
 
-    const quota = Number(selectedBlock.quota || 0);
-    if (selectedSeatCount >= quota) {
-      setError(
-        `Hạng vé ${selectedBlock.className} đã đủ ${quota.toLocaleString("vi-VN")} ghế nên không thể thêm ghế mới.`
-      );
-      return;
-    }
-
-    setBlocks((prev) =>
-      prev.map((block) => {
-        if (block.blockId !== selectedBlockId) return block;
-        return {
-          ...block,
-          seatPoints: normalizeSeatPoints([...(block.seatPoints || []), { x, y }]),
-        };
-      })
-    );
-    setError("");
-  };
-
-  const diChuyenGheDangChon = (targetX, targetY) => {
-    if (!selectedBlock || selectedBlock.type !== "SEATED" || !movingSeat) return;
-
-    if (movingSeat.x === targetX && movingSeat.y === targetY) {
-      setMovingSeat(null);
-      return;
-    }
-
-    if (occupiedMap.has(seatKey(targetX, targetY))) {
+    const targetKey = seatKey(targetX, targetY);
+    if (occupiedMap.has(targetKey)) {
       setError("Ô này đã có ghế. Hãy chọn một ô trống khác để dời ghế.");
       return;
     }
@@ -529,14 +486,117 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
     setError("");
   };
 
-  const handleSeatCellClick = (x, y) => {
-    if (!selectedBlock || selectedBlock.type !== "SEATED") return;
-
+  const handleDeleteSeat = useCallback((x, y) => {
     const ownerBlockId = occupiedMap.get(seatKey(x, y));
+    if (!ownerBlockId) return;
+
+    setSelectedBlockId(ownerBlockId);
+    setBlocks((prev) =>
+      prev.map((block) => {
+        if (block.blockId !== ownerBlockId) return block;
+        return {
+          ...block,
+          seatPoints: normalizeSeatPoints(
+            (block.seatPoints || []).filter((point) => !(point.x === x && point.y === y))
+          ),
+        };
+      })
+    );
+
+    if (movingSeat?.x === x && movingSeat?.y === y) {
+      setMovingSeat(null);
+    }
+
+    setError("");
+    setSuccessMessage("");
+  }, [movingSeat, occupiedMap]);
+
+const finalizeAreaDraw = useCallback(() => {
+  if (!isDrawingArea || !drawSelection || !selectedBlock) {
+    setIsDrawingArea(false);
+    setDrawSelection(null);
+    return;
+  }
+
+  const seatsCanAdd = Math.max(0, Number(selectedBlock.quota || 0) - demSoGhe(selectedBlock));
+
+  if (!seatsCanAdd) {
+    setError("Hạng vé này đã đủ số ghế theo quota. Bạn chỉ có thể dời hoặc xóa ghế hiện có.");
+    setIsDrawingArea(false);
+    setDrawSelection(null);
+    return;
+  }
+
+  const candidates = taoDanhSachOTrongKhung(drawSelection, occupiedMap);
+  const seatsToAdd = candidates.slice(0, seatsCanAdd);
+
+  if (!seatsToAdd.length) {
+    setIsDrawingArea(false);
+    setDrawSelection(null);
+    return;
+  }
+
+  updateSelectedBlock((block) => ({
+    ...block,
+    seatPoints: normalizeSeatPoints([...(block.seatPoints || []), ...seatsToAdd]),
+  }));
+
+  if (candidates.length > seatsCanAdd) {
+    setError(
+      `Khu này chỉ còn thiếu ${seatsCanAdd.toLocaleString("vi-VN")} ghế nên hệ thống chỉ thêm đủ quota trong vùng bạn vừa vẽ.`
+    );
+  } else {
+    setError("");
+  }
+
+  setIsDrawingArea(false);
+  setDrawSelection(null);
+}, [drawSelection, isDrawingArea, occupiedMap, selectedBlock, updateSelectedBlock]);
+
+  useEffect(() => {
+    if (!isDrawingArea) return undefined;
+
+    const handleMouseUp = () => {
+      if (suppressMouseUpRef.current) {
+        suppressMouseUpRef.current = false;
+      }
+      finalizeAreaDraw();
+    };
+
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => window.removeEventListener("mouseup", handleMouseUp);
+  }, [finalizeAreaDraw, isDrawingArea]);
+
+  const handleSeatMouseDown = (x, y) => {
+    const ownerBlockId = occupiedMap.get(seatKey(x, y));
+
+    if (movingSeat) {
+      if (!ownerBlockId) {
+        moveSeatTo(x, y);
+        return;
+      }
+
+      if (ownerBlockId === selectedBlockId) {
+        setMovingSeat((prev) =>
+          prev?.x === x && prev?.y === y
+            ? null
+            : {
+                x,
+                y,
+              }
+        );
+        return;
+      }
+
+      setSelectedBlockId(ownerBlockId);
+      setMovingSeat(null);
+      return;
+    }
 
     if (ownerBlockId && ownerBlockId !== selectedBlockId) {
       setSelectedBlockId(ownerBlockId);
-      setMovingSeat(null);
+      setDrawSelection(null);
+      setIsDrawingArea(false);
       return;
     }
 
@@ -553,24 +613,32 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
       return;
     }
 
-    if (movingSeat) {
-      diChuyenGheDangChon(x, y);
+    if (!selectedBlock) return;
+
+    if (selectedRemaining <= 0) {
+      setError("Khu đang chọn đã đủ ghế theo quota nên không thể thêm mới.");
       return;
     }
 
-    themGheVaoKhuDangChon(x, y);
+    suppressMouseUpRef.current = true;
+    setMovingSeat(null);
+    setDrawSelection({ startX: x, startY: y, endX: x, endY: y });
+    setIsDrawingArea(true);
+    setError("");
   };
 
-  const handleAutoArrangeSelectedSeats = () => {
-    if (!selectedBlock || selectedBlock.type !== "SEATED") return;
+  const handleSeatMouseEnter = (x, y) => {
+    if (!isDrawingArea) return;
 
-    const selectedIndex = Math.max(0, blocks.findIndex((block) => block.blockId === selectedBlock.blockId));
-    updateSelectedBlock((block) => ({
-      ...block,
-      seatPoints: taoGheMacDinh(block.quota, selectedIndex),
-    }));
-    setMovingSeat(null);
-    setError("");
+    setDrawSelection((prev) =>
+      prev
+        ? {
+            ...prev,
+            endX: x,
+            endY: y,
+          }
+        : prev
+    );
   };
 
   const handleSubmit = async (event) => {
@@ -583,14 +651,14 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
 
     if (overCapacity) {
       setError(
-        `Tổng quota ghế ngồi đang là ${totalSeatedQuota.toLocaleString("vi-VN")}, vượt quá sức chứa lưới 1.200 vị trí.`
+        `Tổng số ghế đang là ${totalQuota.toLocaleString("vi-VN")}, vượt quá sức chứa ${GRID_CAPACITY.toLocaleString("vi-VN")} vị trí.`
       );
       return;
     }
 
     if (mismatchBlocks.length) {
       setError(
-        `Số ghế thực tế phải khớp quota ở bước 2. Hiện đang lệch: ${mismatchBlocks
+        `Số ghế thực tế phải khớp quota đã khai báo. Hãy kiểm tra lại: ${mismatchBlocks
           .map((block) => block.className)
           .join(", ")}.`
       );
@@ -607,7 +675,7 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
 
       if (laPhanHoiThanhCong(response)) {
         setSuccessMessage(
-          `Đã lưu sơ đồ thành công • ${response.data.data?.seatsCreated ?? 0} ghế được tạo.`
+          `Đã lưu sơ đồ thành công • ${response.data.data?.seatsCreated ?? 0} ghế đã được tạo.`
         );
         onDone?.();
         return;
@@ -623,13 +691,10 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
 
   return (
     <form className="create-event-step3" onSubmit={handleSubmit}>
-      <div className="create-event-step3__toolbar">
+      <div className="create-event-step3__toolbar create-event-step3__toolbar--arena">
         <div>
-          <h3>Thiết lập sơ đồ chỗ ngồi cố định theo quota</h3>
-          <p>
-            Sân khấu được đặt theo dạng hình chữ nhật ngang. Lưới có {GRID_ROWS} hàng × {GRID_COLS} cột ={" "}
-            {GRID_CAPACITY.toLocaleString("vi-VN")} vị trí.
-          </p>
+          <h3>Thiết lập sơ đồ chỗ ngồi</h3>
+
         </div>
 
         <div className="create-event-step3__toolbar-actions">
@@ -652,122 +717,25 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
       {successMessage ? (
         <p className="create-event-feedback create-event-feedback--success">{successMessage}</p>
       ) : null}
-      {overCapacity ? (
-        <p className="create-event-feedback create-event-feedback--error">
-          Tổng quota ghế ngồi từ bước 2 đang vượt quá 1.200 vị trí. Hãy giảm quota trước khi lưu.
-        </p>
-      ) : null}
 
       {!loading && !ticketClasses.length ? (
         <p className="create-event-feedback">Chưa có hạng vé nào. Hãy quay lại bước 2.</p>
       ) : null}
 
       {!loading && ticketClasses.length ? (
-        <div className="create-event-step3__layout">
-          <section className="create-event-canvas">
-            <div className="create-event-canvas__stage">{CANVAS.stageLabel}</div>
-
-            <div className="create-event-step3__stats">
-              <div className="create-event-step3__stat-card">
-                <strong>{GRID_CAPACITY.toLocaleString("vi-VN")}</strong>
-                <span>Tổng vị trí trên lưới</span>
-              </div>
-              <div className="create-event-step3__stat-card">
-                <strong>{totalSeatedQuota.toLocaleString("vi-VN")}</strong>
-                <span>Tổng quota ghế ngồi</span>
-              </div>
-              <div className="create-event-step3__stat-card">
-                <strong>{(GRID_CAPACITY - totalSeatedQuota).toLocaleString("vi-VN")}</strong>
-                <span>Vị trí còn trống</span>
-              </div>
-            </div>
-
-            <div className="create-event-seat-editor">
-              <div className="create-event-canvas__board create-event-canvas__board--grid">
-                <div className="create-event-canvas__standing-layer">
-                  {blocks
-                    .filter((block) => block.type === "STANDING")
-                    .map((block) => {
-                      const isActive = block.blockId === selectedBlockId;
-                      return (
-                        <button
-                          key={block.blockId}
-                          type="button"
-                          className={`create-event-canvas__standing-zone${isActive ? " is-active" : ""}`}
-                          style={{
-                            left: `${block.zone?.x || 0}%`,
-                            top: `${block.zone?.y || 0}%`,
-                            width: `${block.zone?.width || 0}%`,
-                            height: `${block.zone?.height || 0}%`,
-                            backgroundColor: block.color,
-                          }}
-                          onClick={() => setSelectedBlockId(block.blockId)}
-                        >
-                          <strong>{block.blockName}</strong>
-                          <span>{block.className}</span>
-                          <small>{Number(block.quota || 0).toLocaleString("vi-VN")} người</small>
-                        </button>
-                      );
-                    })}
-                </div>
-
-                <div
-                  className="create-event-seat-grid"
-                  style={{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))` }}
-                >
-                  {Array.from({ length: GRID_ROWS * GRID_COLS }, (_, index) => {
-                    const x = (index % GRID_COLS) + 1;
-                    const y = Math.floor(index / GRID_COLS) + 1;
-                    const key = seatKey(x, y);
-                    const ownerBlockId = occupiedMap.get(key);
-                    const ownerBlock = blocks.find((block) => block.blockId === ownerBlockId);
-                    const isSelectedSeat = ownerBlockId && ownerBlockId === selectedBlockId;
-                    const isMovingSeat = movingSeat?.x === x && movingSeat?.y === y;
-                    const selectedBlockFull =
-                      selectedBlock?.type === "SEATED" &&
-                      selectedSeatCount >= Number(selectedBlock?.quota || 0);
-                    const isLockedCell = !ownerBlockId && selectedBlockFull && !movingSeat;
-
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        className={`create-event-seat-cell${ownerBlockId ? " is-filled" : ""}${
-                          isSelectedSeat ? " is-selected" : ""
-                        }${isMovingSeat ? " is-moving" : ""}${isLockedCell ? " is-locked" : ""}`}
-                        style={
-                          ownerBlock
-                            ? {
-                                backgroundColor: ownerBlock.color,
-                                borderColor: ownerBlock.color,
-                              }
-                            : undefined
-                        }
-                        title={`${x}, ${y}${ownerBlock ? ` • ${ownerBlock.className}` : ""}`}
-                        onClick={() => handleSeatCellClick(x, y)}
-                        disabled={selectedBlock?.type === "STANDING"}
-                      >
-                        <span className="sr-only">Ghế {x}-{y}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <aside className="create-event-sidepanel">
-            <section className="create-event-section">
+        <>
+          <div className="create-event-step3__top-stack">
+            <section className="create-event-section create-event-section--mockup create-event-step3__ticket-strip">
               <div className="create-event-section__title-wrap">
                 <h3>Danh sách khu / hạng vé</h3>
-                <p>Chọn khu cần chỉnh rồi bấm trực tiếp trên lưới để dời ghế hoặc thêm ghế còn thiếu.</p>
+
               </div>
 
-              <div className="create-event-block-list">
+              <div className="create-event-block-list create-event-block-list--top">
                 {blocks.map((block) => {
                   const isActive = block.blockId === selectedBlockId;
                   const seatCount = demSoGhe(block);
-                  const isMismatch = block.type === "SEATED" && seatCount !== Number(block.quota || 0);
+                  const isMismatch = seatCount !== Number(block.quota || 0);
 
                   return (
                     <button
@@ -783,13 +751,10 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
                         style={{ backgroundColor: block.color }}
                       />
                       <div>
-                        <strong>{block.className}</strong>
+                        <strong>{block.blockName}</strong>
                         <small>
-                          {block.type === "SEATED"
-                            ? `${seatCount.toLocaleString("vi-VN")} / ${Number(block.quota || 0).toLocaleString(
-                                "vi-VN"
-                              )} ghế`
-                            : `${Number(block.quota || 0).toLocaleString("vi-VN")} người`}
+                          {block.className} • {nhanLoaiVe(block.type)} • {seatCount.toLocaleString("vi-VN")} /
+                          {` ${Number(block.quota || 0).toLocaleString("vi-VN")} ghế`}
                         </small>
                       </div>
                     </button>
@@ -798,172 +763,202 @@ export const Step3SeatLayout = ({ eventId, onDone, onBack }) => {
               </div>
             </section>
 
-            <section className="create-event-section">
-              <div className="create-event-section__title-wrap">
-                <h3>Tùy chỉnh khu vực</h3>
-                <p>
-                  Hệ thống khóa số lượng ghế theo quota đã định ở bước 2. Khi khu đã đủ ghế, bạn chỉ có thể dời vị trí ghế.
-                </p>
-              </div>
+            <div className="create-event-step3__top-grid">
+              <section className="create-event-section create-event-section--mockup create-event-step3__config-card">
+                <div className="create-event-section__title-wrap">
+                  <h3>Tùy chỉnh khu đang chọn</h3>
+                  
+                </div>
 
-              {selectedBlock ? (
-                <>
-                  <div className="create-event-grid">
-                    <label className="create-event-field">
-                      <span>Tên khu</span>
-                      <input
-                        type="text"
-                        name="blockName"
-                        value={selectedBlock.blockName}
-                        onChange={handleBlockFieldChange}
-                      />
-                    </label>
+                {selectedBlock ? (
+                  <>
+                    <div className="create-event-grid create-event-grid--two-columns">
+                      <label className="create-event-field">
+                        <span>Tên khu</span>
+                        <input
+                          type="text"
+                          name="blockName"
+                          value={selectedBlock.blockName}
+                          onChange={handleBlockFieldChange}
+                        />
+                      </label>
 
-                    <label className="create-event-field">
-                      <span>Mã khu</span>
-                      <input
-                        type="text"
-                        name="blockId"
-                        value={selectedBlock.blockId}
-                        onChange={handleBlockFieldChange}
-                      />
-                    </label>
+                      <label className="create-event-field">
+                        <span>Mã khu</span>
+                        <input
+                          type="text"
+                          name="blockId"
+                          value={selectedBlock.blockId}
+                          onChange={handleBlockFieldChange}
+                        />
+                      </label>
+                    </div>
 
-                    <label className="create-event-field">
-                      <span>Hạng vé</span>
-                      <select
-                        name="ticketClassId"
-                        value={selectedBlock.ticketClassId}
-                        onChange={handleBlockFieldChange}
-                      >
-                        {ticketClasses.map((ticketClass) => (
-                          <option key={ticketClass.ticketClassId} value={ticketClass.ticketClassId}>
-                            {ticketClass.className}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
+                    <div className="create-event-grid create-event-grid--two-columns create-event-grid--align-end">
+                      <label className="create-event-field">
+                        <span>Hạng vé</span>
+                        <select
+                          name="ticketClassId"
+                          value={selectedBlock.ticketClassId}
+                          onChange={handleBlockFieldChange}
+                        >
+                          {ticketClasses.map((ticketClass) => (
+                            <option key={ticketClass.ticketClassId} value={ticketClass.ticketClassId}>
+                              {ticketClass.className}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
 
-                  {selectedBlock.type === "SEATED" ? (
-                    <>
-                      <div className="create-event-inline-note create-event-inline-note--seat-stats">
-                        <strong>
-                          {selectedSeatCount.toLocaleString("vi-VN")} / {Number(selectedBlock.quota || 0).toLocaleString("vi-VN")} ghế
-                        </strong>
-                        <span>
-                          Bấm một ghế của khu này để chọn dời, sau đó bấm vào ô trống mới. Khi còn thiếu ghế, bấm vào ô trống để thêm ghế.
-                        </span>
-                      </div>
-
-                      {movingSeat ? (
-                        <div className="create-event-inline-note create-event-inline-note--moving">
-                          <strong>
-                            Đang chọn ghế ({movingSeat.x}, {movingSeat.y})
-                          </strong>
-                          <span>Bấm vào một ô trống để chuyển ghế sang vị trí mới.</span>
+                      <div className="create-event-step3__mini-stats">
+                        <div className="create-event-step3__mini-stat">
+                          <strong>{selectedSeatCount.toLocaleString("vi-VN")}</strong>
+                          <span>Đã đặt</span>
                         </div>
-                      ) : null}
+                        <div className="create-event-step3__mini-stat">
+                          <strong>{Number(selectedBlock.quota || 0).toLocaleString("vi-VN")}</strong>
+                          <span>Quota</span>
+                        </div>
+                        <div className="create-event-step3__mini-stat">
+                          <strong>{selectedRemaining.toLocaleString("vi-VN")}</strong>
+                          <span>Còn thiếu</span>
+                        </div>
+                      </div>
+                    </div>
 
-                      <div className="create-event-step3__toolbar-actions">
+                    <div className="create-event-step3__panel-actions create-event-step3__panel-actions--top">
+                      <button
+                        type="button"
+                        className="create-event-button create-event-button--secondary"
+                        onClick={handleClearSelectedBlock}
+                      >
+                        Xóa toàn bộ ghế khu này
+                      </button>
+                      {movingSeat ? (
                         <button
                           type="button"
-                          className="create-event-button create-event-button--secondary"
-                          onClick={handleAutoArrangeSelectedSeats}
+                          className="create-event-button create-event-button--ghost"
+                          onClick={() => setMovingSeat(null)}
                         >
-                          Xếp lại theo quota
+                          Bỏ chọn ghế đang dời
                         </button>
-                        {movingSeat ? (
-                          <button
-                            type="button"
-                            className="create-event-button create-event-button--ghost"
-                            onClick={() => setMovingSeat(null)}
-                          >
-                            Bỏ chọn ghế đang dời
-                          </button>
-                        ) : null}
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <p className="create-event-feedback">Chọn một khu để chỉnh sửa.</p>
+                )}
+              </section>
+
+              <section className="create-event-section create-event-section--mockup create-event-step3__legend-card">
+                <div className="create-event-section__title-wrap">
+                  <h3>Chú thích và thống kê</h3>
+                  
+                </div>
+
+                <div className="create-event-legend create-event-legend--grid">
+                  {ticketClasses.map((ticketClass) => (
+                    <div key={ticketClass.ticketClassId} className="create-event-legend__item">
+                      <span style={{ backgroundColor: ticketClass.color }} />
+                      <div>
+                        <strong>{ticketClass.className}</strong>
+                        <small>
+                          #{ticketClass.ticketClassId} • {nhanLoaiVe(ticketClass.type)} • {Number(
+                            ticketClass.price
+                          ).toLocaleString("vi-VN")} VNĐ
+                        </small>
                       </div>
-                    </>
-                  ) : (
-                    <div className="create-event-grid create-event-grid--two">
-                      <label className="create-event-field">
-                        <span>Tọa độ X (%)</span>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          name="x"
-                          value={selectedBlock.zone?.x ?? 0}
-                          onChange={handleStandingZoneChange}
-                        />
-                      </label>
-
-                      <label className="create-event-field">
-                        <span>Tọa độ Y (%)</span>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          name="y"
-                          value={selectedBlock.zone?.y ?? 0}
-                          onChange={handleStandingZoneChange}
-                        />
-                      </label>
-
-                      <label className="create-event-field">
-                        <span>Rộng (%)</span>
-                        <input
-                          type="number"
-                          min="1"
-                          max="100"
-                          name="width"
-                          value={selectedBlock.zone?.width ?? 0}
-                          onChange={handleStandingZoneChange}
-                        />
-                      </label>
-
-                      <label className="create-event-field">
-                        <span>Cao (%)</span>
-                        <input
-                          type="number"
-                          min="1"
-                          max="100"
-                          name="height"
-                          value={selectedBlock.zone?.height ?? 0}
-                          onChange={handleStandingZoneChange}
-                        />
-                      </label>
                     </div>
-                  )}
-                </>
-              ) : (
-                <p className="create-event-feedback">Chọn một khu để chỉnh sửa.</p>
-              )}
-            </section>
+                  ))}
+                </div>
 
-            <section className="create-event-section">
-              <div className="create-event-section__title-wrap">
-                <h3>Chú thích hạng vé</h3>
-                <p>Danh sách hạng vé được lấy trực tiếp từ backend.</p>
-              </div>
-
-              <div className="create-event-legend">
-                {ticketClasses.map((ticketClass) => (
-                  <div key={ticketClass.ticketClassId} className="create-event-legend__item">
-                    <span style={{ backgroundColor: ticketClass.color }} />
-                    <div>
-                      <strong>{ticketClass.className}</strong>
-                      <small>
-                        #{ticketClass.ticketClassId} • {nhanLoaiVe(ticketClass.type)} •{" "}
-                        {Number(ticketClass.price).toLocaleString("vi-VN")} VNĐ
-                      </small>
-                    </div>
+                <div className="create-event-step3__stats create-event-step3__stats--arena">
+                  <div className="create-event-step3__stat-card">
+                    <strong>{GRID_CAPACITY.toLocaleString("vi-VN")}</strong>
+                    <span>Sức chứa tối đa</span>
                   </div>
-                ))}
+                  <div className="create-event-step3__stat-card">
+                    <strong>{totalQuota.toLocaleString("vi-VN")}</strong>
+                    <span>Tổng số chỗ của sự kiện</span>
+                  </div>
+                  <div className="create-event-step3__stat-card">
+                    <strong>{placedSeats.toLocaleString("vi-VN")}</strong>
+                    <span>Ghế đã đặt trên sơ đồ</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <section className="create-event-canvas create-event-canvas--arena">
+            <div className="create-event-canvas__stage create-event-canvas__stage--arena">
+              {CANVAS.stageLabel}
+            </div>
+
+            <div className="create-event-canvas__meta create-event-canvas__meta--arena">
+              <span>
+                Khu đang chọn: <strong>{selectedBlock?.blockName || "Chưa chọn"}</strong>
+              </span>
+              <span>
+                <strong>{selectedSeatCount.toLocaleString("vi-VN")}</strong> / {Number(
+                  selectedBlock?.quota || 0
+                ).toLocaleString("vi-VN")} ghế của khu này
+              </span>
+              <span>
+                {movingSeat
+                  ? `Đang dời ghế: hàng ${movingSeat.y}, cột ${movingSeat.x}`
+                  : "Nhấn đúp vào ghế để xóa nhanh"}
+              </span>
+            </div>
+
+            <div className="create-event-seat-editor create-event-seat-editor--arena">
+              <div className="create-event-canvas__board create-event-canvas__board--grid create-event-canvas__board--arena">
+                <div
+                  className="create-event-seat-grid create-event-seat-grid--arena"
+                  style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 7px)` }}
+                >
+                  {Array.from({ length: GRID_ROWS * GRID_COLS }, (_, index) => {
+                    const x = (index % GRID_COLS) + 1;
+                    const y = Math.floor(index / GRID_COLS) + 1;
+                    const key = seatKey(x, y);
+                    const ownerBlockId = occupiedMap.get(key);
+                    const ownerBlock = blocks.find((block) => block.blockId === ownerBlockId);
+                    const isActiveBlock = ownerBlockId === selectedBlockId;
+                    const isMovingSeat = movingSeat?.x === x && movingSeat?.y === y;
+                    const isPreview = previewCells.has(key);
+                    const isTarget = !ownerBlockId && Boolean(movingSeat);
+
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`create-event-seat-cell create-event-seat-cell--arena${ownerBlockId ? " is-filled" : ""}${
+                          isActiveBlock ? " is-selected" : ""
+                        }${isMovingSeat ? " is-moving" : ""}${isTarget ? " is-target" : ""}${
+                          isPreview ? " is-preview" : ""
+                        }`}
+                        style={
+                          ownerBlock
+                            ? {
+                                backgroundColor: ownerBlock.color,
+                                borderColor: ownerBlock.color,
+                              }
+                            : undefined
+                        }
+                        title={`Hàng ${y} • Cột ${x}${ownerBlock ? ` • ${ownerBlock.className}` : ""}`}
+                        onMouseDown={() => handleSeatMouseDown(x, y)}
+                        onMouseEnter={() => handleSeatMouseEnter(x, y)}
+                        onDoubleClick={() => handleDeleteSeat(x, y)}
+                      >
+                        <span className="sr-only">Ghế {x}-{y}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </section>
-          </aside>
-        </div>
+            </div>
+          </section>
+        </>
       ) : null}
 
       <div className="create-event-actions">

@@ -195,7 +195,7 @@ export const Step1BasicInfo = ({ onDone }) => {
       <section className="create-event-section">
         <div className="create-event-section__title-wrap">
           <h3>Thời gian và địa điểm</h3>
-          <p>Backend hiện tại không có API `GET /venues`, nên địa điểm được gợi ý từ dữ liệu sự kiện đã có.</p>
+          
         </div>
 
         <div className="create-event-grid create-event-grid--two">
@@ -278,12 +278,7 @@ export const Step1BasicInfo = ({ onDone }) => {
         {selectedVenue ? (
           <div className="create-event-inline-note">
             <strong>{selectedVenue.venueName}</strong>
-            <span>
-              {selectedVenue.address}
-              {selectedVenue.capacity
-                ? ` • Sức chứa: ${Number(selectedVenue.capacity).toLocaleString("vi-VN")}`
-                : ""}
-            </span>
+            <span>{selectedVenue.address}</span>
           </div>
         ) : null}
       </section>
@@ -291,7 +286,7 @@ export const Step1BasicInfo = ({ onDone }) => {
       <section className="create-event-section">
         <div className="create-event-section__title-wrap">
           <h3>Ảnh bìa sự kiện</h3>
-          <p>Ảnh bìa là bắt buộc vì backend sẽ kiểm tra `eventImgUrl` sau khi upload.</p>
+
         </div>
 
         <div className="create-event-upload">
