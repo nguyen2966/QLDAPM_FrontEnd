@@ -3,6 +3,7 @@ import { API } from "../../../../api/api.js";
 
 const EMPTY_CLASS = {
   className: "",
+  description: "",
   color: "#6d4aff",
   type: "SEATED",
   quota: "",
@@ -44,6 +45,7 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
       {
         id: taoIdTam(),
         className: draft.className.trim(),
+        description: draft.description.trim(),
         color: draft.color,
         type: draft.type,
         quota: Number(draft.quota),
@@ -76,14 +78,16 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
     setError("");
 
     try {
-      // Backend nhận mảng trực tiếp, KHÔNG nhận object bọc ngoài
-      const payload = ticketClasses.map(({ className, color, type, quota, price }) => ({
-        className,
-        color,
-        type,
-        quota,
-        price,
-      }));
+      const payload = ticketClasses.map(
+        ({ className, description, color, type, quota, price }) => ({
+          className,
+          description,
+          color,
+          type,
+          quota,
+          price,
+        })
+      );
 
       const response = await API.event.createTicketClasses(eventId, payload);
 
@@ -106,6 +110,7 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
         <section className="create-event-section create-event-step2__form-box">
           <div className="create-event-section__title-wrap">
             <h3>Thêm hạng vé mới</h3>
+            <p>Tạo từng hạng vé ở cột trái rồi kiểm tra lại ở bảng bên phải.</p>
           </div>
 
           <div className="create-event-grid">
@@ -116,6 +121,17 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
                 name="className"
                 placeholder="VIP, Phổ thông..."
                 value={draft.className}
+                onChange={handleDraftChange}
+              />
+            </label>
+
+            <label className="create-event-field create-event-field--full">
+              <span>Mô tả hạng vé</span>
+              <textarea
+                name="description"
+                rows="4"
+                placeholder="Ví dụ: Khu vực gần sân khấu, lối vào riêng, tặng kèm nước uống..."
+                value={draft.description}
                 onChange={handleDraftChange}
               />
             </label>
@@ -174,7 +190,9 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
           <div className="create-event-section__title-wrap create-event-section__title-wrap--inline">
             <div>
               <h3>Danh sách hạng vé</h3>
-              <p>{ticketClasses.length} hạng vé • Tổng số vé: {totalQuota.toLocaleString("vi-VN")}</p>
+              <p>
+                {ticketClasses.length} hạng vé • Tổng quota: {totalQuota.toLocaleString("vi-VN")}
+              </p>
             </div>
             <span className="create-event-badge">Sự kiện #{eventId}</span>
           </div>
@@ -184,6 +202,7 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
               <thead>
                 <tr>
                   <th>Tên hạng vé</th>
+                  <th>Mô tả</th>
                   <th>Loại vé</th>
                   <th>Số lượng</th>
                   <th>Giá bán</th>
@@ -196,6 +215,7 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
                   ticketClasses.map((item) => (
                     <tr key={item.id}>
                       <td>{item.className}</td>
+                      <td>{item.description || "—"}</td>
                       <td>{nhanLoaiVe(item.type)}</td>
                       <td>{Number(item.quota).toLocaleString("vi-VN")}</td>
                       <td>{Number(item.price).toLocaleString("vi-VN")} VNĐ</td>
@@ -219,7 +239,7 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="create-event-table__empty">
+                    <td colSpan="7" className="create-event-table__empty">
                       Chưa có hạng vé nào. Hãy thêm dữ liệu từ biểu mẫu bên trái.
                     </td>
                   </tr>
