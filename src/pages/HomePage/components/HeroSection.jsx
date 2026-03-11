@@ -1,3 +1,7 @@
+import moneyIcon from "../../../assets/money.png";
+import locationIcon from "../../../assets/location.png";
+import calendarIcon from "../../../assets/calendar.png";
+
 function dinhDangVND(amount) {
   return `${Number(amount).toLocaleString("vi-VN")} VNĐ`;
 }
@@ -23,10 +27,10 @@ export function HeroSection({ featured, onPrev, onNext, onExplore }) {
         <p className="home-hero__desc">{featured.description}</p>
 
         <div className="home-hero__meta">
-          <div className="home-chip">📅 {dinhDangNgay(featured.dateToStart)}</div>
-          <div className="home-chip">📍 {featured.venue?.venueName}</div>
+          <div className="home-chip"><img src={calendarIcon}/> {dinhDangNgay(featured.dateToStart)}</div>
+          <div className="home-chip"><img src={locationIcon}/> {featured.venue?.venueName}</div>
           <div className="home-chip">
-            💳 Từ {dinhDangVND(layGiaThapNhat(featured.ticketClasses))}
+            <img src={moneyIcon}/> Từ {dinhDangVND(layGiaThapNhat(featured.ticketClasses))}
           </div>
         </div>
 
