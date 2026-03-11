@@ -326,7 +326,7 @@ export function HomePage() {
       return;
     }
 
-    alert(`✅ Demo: Đặt vé thành công cho "${event.eventName}"`);
+    navigate(`/${event.eventId}`);
   };
 
   const handlePrevFeatured = () => {

@@ -1,0 +1,17 @@
+.head-line{
+  display: flex;
+  height: 70px;
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+.head-line-item{
+  padding: 5px 5px;
+  border: 1px solid;
+  display: flex;
+  gap: 5px;
+}
+
+.head-line-item img{
+  height: 80%;
+}

@@ -136,6 +136,10 @@ html{
   color:rgba(0,0,0,0.72);
 }
 
+.home-chip img {
+  height: 16px;
+}
+
 .home-hero__actions{
   display:flex;
   gap:10px;
@@ -436,13 +440,14 @@ html{
 .home-card__metaIcon{
   width:26px;
   height:26px;
-  border-radius:10px;
   display:grid;
   place-items:center;
-  background:rgba(0,0,0,0.06);
-  border:1px solid rgba(0,0,0,0.08);
   font-size:14px;
   flex:0 0 auto;
+}
+
+.home-card__metaIcon img{
+  width: 100%;
 }
 
 .home-card__metaText{

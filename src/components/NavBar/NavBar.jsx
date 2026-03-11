@@ -1,6 +1,6 @@
 import "./NavBar.css";
 
-import bkLogo from "../../assets/bklogo.png";
+import appLogo from "../../assets/app-logo.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../hooks/useAuth.js";
@@ -205,8 +205,7 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
     <header className="home-header">
       <div className="home-header__left">
         <Link to="/" className="home-brand">
-          <img className="home-brand__logo" src={bkLogo} alt="EventPass" />
-          <span className="home-brand__name">EventPass</span>
+          <img className="home-brand__logo" src={appLogo} alt="EventPass" />
         </Link>
 
         {!token

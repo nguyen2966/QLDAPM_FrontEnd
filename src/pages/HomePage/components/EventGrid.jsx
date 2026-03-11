@@ -1,3 +1,7 @@
+import calendarIcon from "../../../assets/calendar.png";
+import locationIcon from "../../../assets/location.png";
+import seatIcon from "../../../assets/seat.png";
+
 const TICKET_TYPE_LABELS = {
   SEATED: "Ghế ngồi",
   STANDING: "Ghế đứng",
@@ -92,7 +96,7 @@ export function EventGrid({
 
                   <div className="home-card__metaRow home-card__metaRow--ticket">
                     <span className="home-card__metaIcon" aria-hidden="true">
-                      🎫
+                      <img src={seatIcon}/>
                     </span>
                     <span className="home-card__metaText">
                       {layLoaiVeHienThi(event.ticketClasses)}
@@ -101,7 +105,7 @@ export function EventGrid({
                   
                   <div className="home-card__metaRow home-card__metaRow--date">
                     <span className="home-card__metaIcon" aria-hidden="true">
-                      📅
+                      <img src={calendarIcon}/>
                     </span>
                     <span className="home-card__metaText">
                       {dinhDangNgay(event.dateToStart)}
@@ -110,7 +114,7 @@ export function EventGrid({
 
                   <div className="home-card__metaRow home-card__metaRow--venue">
                     <span className="home-card__metaIcon" aria-hidden="true">
-                      📍
+                      <img src={locationIcon}/>
                     </span>
                     <span className="home-card__metaText">
                       {event.venue?.venueName || ""}
@@ -133,7 +137,7 @@ export function EventGrid({
                     type="button"
                     onClick={() => onDatVe(event)}
                   >
-                    Đặt vé
+                    Chi tiết
                   </button>
                 </div>
               </div>

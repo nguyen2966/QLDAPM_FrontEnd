@@ -8,6 +8,8 @@ import { Signup } from "./pages/Signup/Signup";
 import { useAuth } from "./hooks/useAuth.js";
 import { UserPage } from "./pages/UserPage/UserPage.jsx";
 import { CreateEventPage } from "./pages/Organizer/CreateEventPage/CreateEventPage.jsx";
+import { EventDetail } from "./pages/EventDetailPage/EventDetail.jsx";
+import { OrderPage } from "./pages/OrderPage/OrderPage.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -43,6 +45,8 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER", "ORGANIZER"]} />}>
           <Route path="/user" element={<UserPage />} />
           <Route path="/" element={<HomePage />} />
+          <Route path = "/:eventId" element ={<EventDetail/>}/>
+          <Route path = "/order/:eventId" element={<OrderPage/>}/>
         </Route>
 
         {/* Organizer only */}
