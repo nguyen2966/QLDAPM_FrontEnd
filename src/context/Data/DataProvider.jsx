@@ -7,29 +7,6 @@ function laPhanHoiThanhCong(response) {
   return response?.data?.status === "success";
 }
 
-function rutGonDanhSachDiaDiem(events = []) {
-  const venueMap = new Map();
-
-  events.forEach((event) => {
-    const venue = event?.venue;
-    if (!venue) return;
-
-    const key = venue.venueId || venue.venueName;
-    if (!key) return;
-
-    if (!venueMap.has(key)) {
-      venueMap.set(key, {
-        venueId: venue.venueId ?? key,
-        venueName: venue.venueName || `Địa điểm ${key}`,
-        address: venue.address || "",
-        capacity: venue.capacity || null,
-      });
-    }
-  });
-
-  return Array.from(venueMap.values());
-}
-
 export const DataProvider = ({ children }) => {
   const { accessToken, loading: authLoading } = useAuth();
 
@@ -54,6 +31,7 @@ export const DataProvider = ({ children }) => {
 
     try {
       const response = await API.event.getAll();
+      const DanhSachVenue = await API.event.getVenues();
 
       if (!laPhanHoiThanhCong(response)) {
         setEvents([]);
@@ -63,26 +41,11 @@ export const DataProvider = ({ children }) => {
       }
 
       const danhSachCoBan = response?.data?.data || [];
-
-      const danhSachChiTiet = await Promise.all(
-        danhSachCoBan.map(async (event) => {
-          try {
-            const detailResponse = await API.event.getById(event.eventId);
-
-            if (laPhanHoiThanhCong(detailResponse)) {
-              return detailResponse.data.data;
-            }
-
-            return event;
-          } catch (detailError) {
-            console.error(`Lỗi khi lấy chi tiết event ${event.eventId}:`, detailError);
-            return event;
-          }
-        })
-      );
-
-      setEvents(danhSachChiTiet);
-      setVenues(rutGonDanhSachDiaDiem(danhSachChiTiet));
+    
+      setEvents(danhSachCoBan);
+      setVenues(DanhSachVenue.data.data);
+      console.log(danhSachCoBan);
+      console.log(DanhSachVenue.data.data);
     } catch (err) {
       console.error("Lỗi khi tải danh sách sự kiện:", err);
       setEvents([]);
@@ -93,8 +56,9 @@ export const DataProvider = ({ children }) => {
     }
   }, [accessToken]);
 
-  const refreshVenues = useCallback(() => {
-    setVenues(rutGonDanhSachDiaDiem(events));
+  const refreshVenues = useCallback(async () => {
+    const DanhSachVenue = await API.event.getVenues();
+    setVenues(DanhSachVenue.data.data);
   }, [events]);
 
   useEffect(() => {
