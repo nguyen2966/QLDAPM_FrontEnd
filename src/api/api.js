@@ -22,6 +22,7 @@ export const API = {
 
   event: {
     getAll: () => axiosInstance.get("/event"),
+    getVenues: () => axiosInstance.get("/event/venues"),
     getById: (eventId) => axiosInstance.get(`/event/${eventId}`),
 
     getMyEvents: () => axiosInstance.get("/event/my-event"),
