@@ -44,8 +44,8 @@ export const DataProvider = ({ children }) => {
     
       setEvents(danhSachCoBan);
       setVenues(DanhSachVenue.data.data);
-      console.log(danhSachCoBan);
-      console.log(DanhSachVenue.data.data);
+      //console.log(danhSachCoBan);
+      //console.log(DanhSachVenue.data.data);
     } catch (err) {
       console.error("Lỗi khi tải danh sách sự kiện:", err);
       setEvents([]);

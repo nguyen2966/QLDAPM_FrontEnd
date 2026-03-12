@@ -45,4 +45,9 @@ export const API = {
     update: (eventId, data) =>
       axiosInstance.put(`/event/my-event/${eventId}`, data),
   },
+
+  order: {
+    createOrder: (seatIds) => axiosInstance.post('/orders/create', seatIds),
+    confirmPayment: (orderId,seatIds)=> axiosInstance.post(`/orders/${orderId}/confirm-payment`,seatIds)
+  }
 };
