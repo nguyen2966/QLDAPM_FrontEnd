@@ -46,6 +46,35 @@ function formatCountdown(deadline) {
   return `${minutes}:${seconds}`;
 }
 
+function getOrderStatusLabel(status) {
+  const statusMap = {
+    PENDING: "Đang giữ",
+    BOOKED: "Đã đặt",
+    PAID: "Đã thanh toán",
+    CANCELLED: "Đã hủy",
+  };
+
+  return statusMap[String(status || "").toUpperCase()] || status || "Đang cập nhật";
+}
+
+function getEventImageSrc(eventDetail) {
+  const rawImageUrl = eventDetail?.eventImgUrl || "";
+  if (!rawImageUrl) return "";
+
+  if (/^https?:\/\//i.test(rawImageUrl)) {
+    return rawImageUrl;
+  }
+
+  const apiBaseUrl = (
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:3000"
+  ).replace(/\/$/, "");
+
+  const normalizedPath = rawImageUrl.startsWith("/") ? rawImageUrl : `/${rawImageUrl}`;
+  return `${apiBaseUrl}${normalizedPath}`;
+}
+
 export function OrderPage() {
   const location = useLocation();
   const { eventId } = useParams();
@@ -60,6 +89,7 @@ export function OrderPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState("00:00");
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +122,12 @@ export function OrderPage() {
       cancelled = true;
     };
   }, [eventId]);
+
+  const eventImage = useMemo(() => getEventImageSrc(eventDetail), [eventDetail]);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [eventImage]);
 
   const seatsById = useMemo(() => {
     const map = new Map();
@@ -307,30 +343,26 @@ export function OrderPage() {
   return (
     <div className="order-page">
       <section className="order-page__hero">
-        <div>
-          <p className="order-page__eyebrow">Đặt ghế thời gian thực</p>
-          <h1>{eventDetail.eventName}</h1>
-          <p className="order-page__meta">
-            {eventDetail.venue?.venueName || "Đang cập nhật địa điểm"} - {formatDate(eventDetail.dateToStart)}
-          </p>
-        </div>
+        <div className="order-page__hero-main">
+          <div className="order-page__hero-copy">
+            <p className="order-page__eyebrow">Đặt ghế thời gian thực</p>
+            <h1>{eventDetail.eventName}</h1>
+            <p className="order-page__meta">
+              {eventDetail.venue?.venueName || "Đang cập nhật địa điểm"} - {formatDate(eventDetail.dateToStart)}
+            </p>
+          </div>
 
-        <div className="order-page__stats">
-          <div className="order-page__stat-card">
-            <strong>{seatStats.total}</strong>
-            <span>Tổng ghế</span>
-          </div>
-          <div className="order-page__stat-card">
-            <strong>{seatStats.AVAILABLE}</strong>
-            <span>Còn trống</span>
-          </div>
-          <div className="order-page__stat-card">
-            <strong>{seatStats.PENDING}</strong>
-            <span>Đang giữ</span>
-          </div>
-          <div className="order-page__stat-card">
-            <strong>{seatStats.BOOKED}</strong>
-            <span>Đã đặt</span>
+          <div className="order-page__hero-image-card">
+            {eventImage && !imageError ? (
+              <img
+                src={eventImage}
+                alt={eventDetail.eventName}
+                className="order-page__hero-image"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="order-page__hero-image-placeholder">Ảnh sự kiện</div>
+            )}
           </div>
         </div>
       </section>
@@ -343,23 +375,39 @@ export function OrderPage() {
           <div className="order-page__section-head">
             <div>
               <h2>Sơ đồ ghế</h2>
-              <p>
-                Ghế được render theo seatLayoutMap + seats[] và cập nhật thời gian thực qua
-                socket seat_updated.
-              </p>
+
             </div>
           </div>
 
           <SeatMap
             seatLayoutMap={eventDetail.seatLayoutMap}
             seats={seats}
-            ticketClasses={eventDetail.ticketClasses}
+            ticketClasses={eventDetail.ticketClasses || []}
             selectedIds={selectedIds}
             onSelect={handleSelectSeat}
           />
         </div>
 
         <aside className="order-page__sidebar">
+          <div className="order-page__stats">
+            <div className="order-page__stat-card">
+              <strong>{seatStats.total}</strong>
+              <span>Tổng ghế</span>
+            </div>
+            <div className="order-page__stat-card">
+              <strong>{seatStats.AVAILABLE}</strong>
+              <span>Còn trống</span>
+            </div>
+            <div className="order-page__stat-card">
+              <strong>{seatStats.PENDING}</strong>
+              <span>Đang giữ</span>
+            </div>
+            <div className="order-page__stat-card">
+              <strong>{seatStats.BOOKED}</strong>
+              <span>Đã đặt</span>
+            </div>
+          </div>
+
           <div className="order-page__panel">
             <h3>Ghế đang chọn</h3>
             <p className="order-page__panel-note">
@@ -411,7 +459,7 @@ export function OrderPage() {
                 </div>
                 <div className="order-page__summary-row">
                   <span>Trạng thái</span>
-                  <strong>{activeOrder.status}</strong>
+                  <strong>{getOrderStatusLabel(activeOrder.status)}</strong>
                 </div>
                 <div className="order-page__summary-row">
                   <span>Hết hạn sau</span>
@@ -432,27 +480,9 @@ export function OrderPage() {
               </>
             ) : (
               <div className="order-page__empty-box">
-                Chưa có đơn tạm giữ. Sau khi tạo đơn, backend sẽ đẩy trạng thái PENDING qua socket.
+                Chưa có đơn tạm giữ
               </div>
             )}
-          </div>
-
-          <div className="order-page__panel">
-            <h3>Hạng vé</h3>
-            <ul className="order-page__ticket-class-list">
-              {(eventDetail.ticketClasses || []).map((ticketClass) => (
-                <li key={ticketClass.ticketClassId} className="order-page__ticket-class-item">
-                  <span
-                    className="order-page__ticket-class-color"
-                    style={{ background: ticketClass.color || "#e2e8f0" }}
-                  />
-                  <div>
-                    <strong>{ticketClass.className}</strong>
-                    <span>{formatCurrency(ticketClass.price)}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
           </div>
         </aside>
       </section>

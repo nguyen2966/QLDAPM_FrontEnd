@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { API } from "../../../../api/api.js";
 import { useData } from "../../../../hooks/useData.js";
+import { getEventGenreOptions } from "../../../../constants/eventGenres.js";
 
 const INITIAL_FORM = {
   eventName: "",
@@ -48,13 +49,7 @@ export const Step1BasicInfo = ({ onDone }) => {
     };
   }, [bannerPreview]);
 
-  const genreOptions = useMemo(() => {
-    const currentGenres = new Set(events.map((event) => event.genre).filter(Boolean));
-    ["Âm nhạc", "EDM", "Hội thảo", "Nghệ thuật", "Thể thao", "Giáo dục", "Triển lãm"].forEach(
-      (genre) => currentGenres.add(genre)
-    );
-    return Array.from(currentGenres);
-  }, [events]);
+  const genreOptions = useMemo(() => getEventGenreOptions(events), [events]);
 
   const selectedVenue = useMemo(
     () => venues.find((venue) => String(venue.venueId) === String(form.venueId)),

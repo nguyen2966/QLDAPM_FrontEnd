@@ -18,7 +18,7 @@ function dinhDangNgay(isoString) {
   });
 }
 
-export function HeroSection({ featured, onPrev, onNext, onExplore }) {
+export function HeroSection({ featured, onPrev, onNext, onDetail }) {
   return (
     <section className="home-hero">
       <div className="home-hero__text">
@@ -35,15 +35,12 @@ export function HeroSection({ featured, onPrev, onNext, onExplore }) {
         </div>
 
         <div className="home-hero__actions">
-          <button className="home-btn home-btn--primary" type="button" onClick={onExplore}>
-            Khám phá sự kiện
-          </button>
           <button
-            className="home-btn home-btn--ghost"
+            className="home-btn home-btn--primary"
             type="button"
-            onClick={() => alert("Demo: Trang chi tiết sự kiện sẽ làm sau.")}
+            onClick={() => onDetail?.(featured)}
           >
-            Xem chi tiết
+            Chi tiết
           </button>
         </div>
       </div>

@@ -1,4 +1,6 @@
- function dinhDangVND(amount) {
+import { useState } from "react";
+
+function dinhDangVND(amount) {
   return `${Number(amount).toLocaleString("vi-VN")} VNĐ`;
 }
 
@@ -14,9 +16,21 @@ function dinhDangNgay(isoString) {
   });
 }
 
-function AnhCard({ src, alt }) {
-  if (!src) return null;
-  return <img className="home-event-img__photo" src={src} alt={alt} />;
+function AnhCard({ src, alt, title }) {
+  const [coLoiAnh, setCoLoiAnh] = useState(false);
+
+  if (!src || coLoiAnh) {
+    return <div className="home-event-img__fallback">{title || "Sự kiện"}</div>;
+  }
+
+  return (
+    <img
+      className="home-event-img__photo"
+      src={src}
+      alt={alt}
+      onError={() => setCoLoiAnh(true)}
+    />
+  );
 }
 
 export function UpcomingEvents({ events }) {
@@ -33,7 +47,7 @@ export function UpcomingEvents({ events }) {
             <div className="home-upcoming__left">
               <div className="home-upcoming__imgWrap">
                 <div className="home-event-img" aria-label={ev.eventName} role="img">
-                  <AnhCard src={ev.eventImgUrl} alt={`Ảnh sự kiện: ${ev.eventName}`} />
+                  <AnhCard src={ev.eventImgUrl} alt={`Ảnh sự kiện: ${ev.eventName}`} title={ev.eventName} />
                 </div>
               </div>
             </div>
