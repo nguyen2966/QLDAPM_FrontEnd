@@ -1,8 +1,16 @@
 import axios from "axios";
 import { EnvVariables } from "../env/env.js";
 
+// const axiosInstance = axios.create({
+//   baseURL: EnvVariables.BACKEND_URL,
+//   withCredentials: true,
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// });
+
 const axiosInstance = axios.create({
-  baseURL: EnvVariables.BACKEND_URL,
+  baseURL: "/api", 
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
