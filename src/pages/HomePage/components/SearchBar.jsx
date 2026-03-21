@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export function SearchBar({
   tuKhoa,
   setTuKhoa,
@@ -10,6 +12,8 @@ export function SearchBar({
   danhSachDiaDiem,
   onSearch,
 }) {
+  const [isDateFieldActive, setIsDateFieldActive] = useState(false);
+
   return (
     <section className="home-search" aria-label="Tìm kiếm sự kiện">
       <div className="home-search__bar home-search__bar--wide">
@@ -31,8 +35,13 @@ export function SearchBar({
 
         <input
           className="home-search__date"
-          type="date"
+          type={isDateFieldActive || ngay ? "date" : "text"}
+          placeholder="Chọn ngày"
           value={ngay}
+          onFocus={() => setIsDateFieldActive(true)}
+          onBlur={() => {
+            if (!ngay) setIsDateFieldActive(false);
+          }}
           onChange={(e) => setNgay(e.target.value)}
         />
 
@@ -43,7 +52,7 @@ export function SearchBar({
         >
           {danhSachDiaDiem.map((loc) => (
             <option key={loc} value={loc}>
-              {loc === "all" ? "Địa điểm" : loc}
+              {loc === "all" ? "Chọn địa điểm" : loc}
             </option>
           ))}
         </select>

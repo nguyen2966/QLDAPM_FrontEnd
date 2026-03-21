@@ -361,6 +361,7 @@ export function HomePage() {
 
   const handlePriceChange = (value) => {
     setPriceFilter(value);
+       setPriceFilter(value);
     setCurrentPage(1);
   };
 
@@ -399,7 +400,6 @@ export function HomePage() {
               <div>
                 <p className="organizer-home__eyebrow">KHU VỰC NHÀ TỔ CHỨC</p>
                 <h1 className="organizer-home__title">Sự kiện của tôi</h1>
-
               </div>
             </div>
 
@@ -507,7 +507,7 @@ export function HomePage() {
             featured={featured}
             onPrev={handlePrevFeatured}
             onNext={handleNextFeatured}
-            onExplore={() => cuonToi("kham-pha")}
+            onDetail={datVe}
           />
         ) : null}
 
@@ -561,7 +561,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <div className="home-content">
+        <section className="home-content">
           <SideBar
             priceFilter={priceFilter}
             setPriceFilter={handlePriceChange}
@@ -589,10 +589,10 @@ export function HomePage() {
               totalPages={totalPages}
               onPageChange={handlePageChange}
             />
-
-            <UpcomingEvents events={suKienSapDienRa} />
           </div>
-        </div>
+        </section>
+
+        <UpcomingEvents events={suKienSapDienRa} />
       </main>
     </div>
   );
