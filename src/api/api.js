@@ -44,6 +44,8 @@ export const API = {
 
     update: (eventId, data) =>
       axiosInstance.put(`/event/my-event/${eventId}`, data),
+
+    getMyOrderCustomer: () => axiosInstance.get("/event/my-tickets"),
   },
 
   order: {
