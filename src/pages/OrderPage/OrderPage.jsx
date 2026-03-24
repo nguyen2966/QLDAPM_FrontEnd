@@ -665,6 +665,7 @@ export function OrderPage() {
           holdExpiredAt: data?.holdExpiredAt || data?.order?.expiredAt,
           totalAmount: data?.order?.totalAmount || totalAmount,
           status: data?.order?.status || "PENDING",
+          eventName: eventDetail.eventName || "Sự kiện"
         },
       });
     } catch (submitError) {
