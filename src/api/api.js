@@ -48,6 +48,8 @@ export const API = {
 
   order: {
     createOrder: (seatIds) => axiosInstance.post('/orders/create', seatIds),
-    confirmPayment: (orderId,seatIds)=> axiosInstance.post(`/orders/${orderId}/confirm-payment`,seatIds)
+    confirmPayment: (orderId,seatIds)=> axiosInstance.post(`/orders/${orderId}/confirm-payment`,seatIds),
+    getOrder: () => axiosInstance.get('/orders'),
+    getOrderDetails: (orderId) => axiosInstance.get(`/orders/:${orderId}`)
   }
 };

@@ -10,6 +10,9 @@ import { UserPage } from "./pages/UserPage/UserPage.jsx";
 import { CreateEventPage } from "./pages/Organizer/CreateEventPage/CreateEventPage.jsx";
 import { EventDetail } from "./pages/EventDetailPage/EventDetail.jsx";
 import { OrderPage } from "./pages/OrderPage/OrderPage.jsx";
+import { MyEventPage } from "./pages/Organizer/MyEventPage/MyEventPage.jsx";
+import { ConfirmPaymentPage } from "./pages/ConfirmPaymentPage/ConfirmPaymentPage.jsx";
+import { MyOrderPage } from "./pages/MyOrderPage.jsx/MyOrderPage.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -47,11 +50,15 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path = "/:eventId" element ={<EventDetail/>}/>
           <Route path = "/order/:eventId" element={<OrderPage/>}/>
+          <Route path = "/order/confirm/:orderId" element={<ConfirmPaymentPage/>}/>
+
+          <Route path ="/order/my-order" element={<MyOrderPage/>}/>
         </Route>
 
         {/* Organizer only */}
         <Route element={<ProtectedRoute allowedRoles={["ORGANIZER"]} />}>
           <Route path="/my-event/create" element={<CreateEventPage />} />
+          <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
 
         {/* Fallback */}

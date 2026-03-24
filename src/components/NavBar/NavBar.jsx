@@ -164,6 +164,10 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
       >
         Sự kiện sắp diễn ra
       </a>
+
+      <Link className="home-nav__link" to="/order/my-order">
+        Đơn hàng của tôi
+      </Link>
     </nav>
   );
 
@@ -186,6 +190,10 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
 
       <Link className="home-nav__link" to="/my-event/create">
         Tạo sự kiện
+      </Link>
+
+      <Link className="home-nav__link" to="/my-event">
+        Thống kê doanh thu
       </Link>
 
       <a

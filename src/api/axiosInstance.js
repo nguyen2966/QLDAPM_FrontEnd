@@ -10,7 +10,7 @@ import { EnvVariables } from "../env/env.js";
 // });
 
 const axiosInstance = axios.create({
-  baseURL: "/api", 
+  baseURL: EnvVariables.BACKEND_URL, 
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
