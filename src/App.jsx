@@ -50,6 +50,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path = "/:eventId" element ={<EventDetail/>}/>
           <Route path = "/order/:eventId" element={<OrderPage/>}/>
+          
           <Route path = "/order/confirm/:orderId" element={<ConfirmPaymentPage/>}/>
 
           <Route path ="/order/my-order" element={<MyOrderPage/>}/>
