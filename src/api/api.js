@@ -53,5 +53,17 @@ export const API = {
     confirmPayment: (orderId,seatIds)=> axiosInstance.post(`/orders/${orderId}/confirm-payment`,seatIds),
     getOrder: () => axiosInstance.get('/orders'),
     getOrderDetails: (orderId) => axiosInstance.get(`/orders/:${orderId}`)
+  },
+
+  payment: {
+    createLinkMomo: (orderId, seatIds, amount) => axiosInstance.post(`/payment/momo-link`, { orderId, seatIds, amount }),
+  },
+
+  QR: {
+    getQRToken: (ticketCode) => axiosInstance.get(`/qr-token?ticketCode=${ticketCode}`),
+  },
+
+  ticket: {
+    getInfo: (ticketCode) => axiosInstance.get(`/ticket/info?ticketCode=${ticketCode}`),
   }
 };

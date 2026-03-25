@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axiosInstance from "../../api/axiosInstance";
 import PaymentForm from "./PaymentForm/paymentForm.jsx";
 import PaymentMethod from "./paymentMethod/PaymentMethod.jsx";
 import PaymentInfo from "./PaymentInfo/PaymentInfo.jsx";
+import {API} from "../../api/api.js";
 
 export function ConfirmPaymentPage() {
     const location = useLocation();
@@ -69,11 +69,7 @@ export function ConfirmPaymentPage() {
 
         try {
             setLoading(true);
-            const response = await axiosInstance.post("/payment/momo-link", {
-                orderId: orderId,
-                seatIds: seatIds,
-                amount: totalAmount || 100000,
-            });
+            const response = await API.payment.createLinkMomo(orderId, seatIds, totalAmount)
 
             const payUrl = response.data?.data?.data.payUrl;
             if (payUrl) {
