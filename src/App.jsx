@@ -13,6 +13,8 @@ import { OrderPage } from "./pages/OrderPage/OrderPage.jsx";
 import { MyEventPage } from "./pages/Organizer/MyEventPage/MyEventPage.jsx";
 import { ConfirmPaymentPage } from "./pages/ConfirmPaymentPage/ConfirmPaymentPage.jsx";
 import { MyOrderPage } from "./pages/MyOrderPage.jsx/MyOrderPage.jsx";
+import PaymentResult from "./pages/PaymentResultPage/PaymentResult.jsx";
+import MyTicketsPage from "./pages/MyTicketsPage/MyTicketsPage.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -52,6 +54,8 @@ export default function App() {
           <Route path = "/order/:eventId" element={<OrderPage/>}/>
           
           <Route path = "/order/confirm/:orderId" element={<ConfirmPaymentPage/>}/>
+          <Route path = "/order/result" element={<PaymentResult/>}/>
+          <Route path = "/user/my-tickets" element={<MyTicketsPage/>}/>
 
           <Route path ="/order/my-order" element={<MyOrderPage/>}/>
         </Route>

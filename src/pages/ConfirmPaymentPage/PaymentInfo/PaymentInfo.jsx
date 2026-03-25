@@ -1,6 +1,6 @@
 import React from 'react'
 
-const PaymentInfo = ({timeLeft, formatTime, orderId, eventName, seatIds, amount, handlePayment, loading}) => {
+const PaymentInfo = ({timeLeft, formatTime, orderId, eventName, seatIds, amount, handlePayment, loading, formatCurrency}) => {
     return (
         <div className="lg:col-span-1">
             <div className="bg-white shadow rounded-lg p-6 border border-gray-100 sticky top-6">
@@ -45,7 +45,7 @@ const PaymentInfo = ({timeLeft, formatTime, orderId, eventName, seatIds, amount,
                 <div className="border-t border-gray-200 pt-4 mb-6 flex justify-between items-center">
                     <span className="text-lg font-semibold text-gray-800">Tổng thanh toán:</span>
                     <span className="text-2xl font-bold text-[#DC2626]">
-                  {amount ? amount.toLocaleString() : "0"} VNĐ
+                  {amount ? formatCurrency(amount) : "0"}
                 </span>
                 </div>
 

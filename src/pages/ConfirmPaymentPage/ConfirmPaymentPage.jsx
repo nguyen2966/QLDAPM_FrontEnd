@@ -15,13 +15,21 @@ export function ConfirmPaymentPage() {
     const [timeLeft, setTimeLeft] = useState(300);
 
     // Lấy data từ trang chọn ghế truyền sang
-    const { orderId, seatIds, amount, eventName = "Sự kiện âm nhạc (Demo)" } = location.state || {};
+    const { orderId, seatIds, totalAmount, eventName } = location.state || {};
 
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
         phone: "",
     });
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+            maximumFractionDigits: 0,
+        }).format(Number(value || 0));
+    }
 
     // Xử lý đồng hồ đếm ngược
     useEffect(() => {
@@ -64,7 +72,7 @@ export function ConfirmPaymentPage() {
             const response = await axiosInstance.post("/payment/momo-link", {
                 orderId: orderId,
                 seatIds: seatIds,
-                amount: amount || 100000,
+                amount: totalAmount || 100000,
             });
 
             const payUrl = response.data?.data?.data.payUrl;
@@ -128,9 +136,10 @@ export function ConfirmPaymentPage() {
                         orderId={orderId}
                         eventName={eventName}
                         seatIds={seatIds}
-                        amount={amount}
+                        amount={totalAmount}
                         handlePayment={handlePayment}
                         loading={loading}
+                        formatCurrency={formatCurrency}
                     />
 
                 </div>
