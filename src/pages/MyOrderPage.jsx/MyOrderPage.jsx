@@ -102,7 +102,7 @@ export function MyOrderPage() {
         setOrders(data);
         setLoading(false);
       } catch (error) {
-        setError(getErrorMessage(error, "Không thể tải dữ liệu sự kiện."));
+        console.error(error);
         setLoading(false);
       }
     }
