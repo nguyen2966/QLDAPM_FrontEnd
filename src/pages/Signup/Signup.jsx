@@ -62,6 +62,7 @@ export function Signup() {
   const [cName, setCName]   = useState("");
   const [cPass, setCPass]   = useState("");
   const [cPass2, setCPass2] = useState("");
+  const [cPhone, setCPhone] = useState("");
 
   // Organizer fields
   const [oEmail, setOEmail] = useState("");
@@ -103,6 +104,7 @@ export function Signup() {
         email:    cEmail.trim().toLowerCase(),
         password: cPass,
         name:     cName.trim(),
+        phoneNumber:  cPhone,
         role:     "CUSTOMER",
       });
 
@@ -249,6 +251,15 @@ export function Signup() {
                     id="c-name" className="signup-input" type="text"
                     placeholder="Nhập họ và tên" value={cName}
                     onChange={(e) => setCName(e.target.value)} disabled={loading}
+                  />
+                </div>
+
+                <div className="signup-field">
+                  <label className="signup-label" htmlFor="c-phone">Số điện thoại</label>
+                  <input
+                    id="c-phone" className="signup-input" type="text"
+                    placeholder="Nhập số điện thoại" value={cPhone}
+                    onChange={(e) => setCPhone(e.target.value)} disabled={loading}
                   />
                 </div>
 
