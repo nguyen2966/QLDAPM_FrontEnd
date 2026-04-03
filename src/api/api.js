@@ -17,7 +17,9 @@ export const API = {
   user: {
     getUserById: (userId) => axiosInstance.get(`/users/${userId}`),
     updateUser: (userId, updateData) =>
-      axiosInstance.put(`/users/${userId}`, updateData),
+      axiosInstance.put(`/users/${userId}`, updateData,{
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
   },
 
   event: {
