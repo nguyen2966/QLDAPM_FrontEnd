@@ -141,6 +141,7 @@ export function Signup() {
         email:    oEmail.trim().toLowerCase(),
         password: oPass,
         name:     oName.trim(),
+        phoneNumber:  oPhone,
         role:     "ORGANIZER",
       });
 
