@@ -164,54 +164,6 @@ export function UserPage() {
     setLicenseFile(file);
   };
 
-  // const onUpdate = async () => {
-  //   setNotice(null);
-
-  //   const nextErrors = validateForm(form);
-  //   if (Object.keys(nextErrors).length > 0) {
-  //     setErrors(nextErrors);
-  //     setNotice({ type: "error", message: "Vui lòng kiểm tra lại các trường đang bị lỗi." });
-  //     return;
-  //   }
-
-  //   let newAvatarDataUrl = null;
-  //   if (avatarFile) {
-  //     newAvatarDataUrl = await fileToDataUrl(avatarFile);
-  //   }
-
-  //   setSaving(true);
-  //   try {
-  //     const payload = {
-  //       name: form.name.trim(),
-  //       phoneNumber: form.phoneNumber.trim(),
-  //       avatarImg: avatarFile || undefined,
-  //       taxCode: form.taxCode?.trim() || undefined,
-  //       websiteUrl: form.websiteUrl?.trim() || undefined,
-  //       licenseFile: licenseFile
-  //     };
-
-  //     const res = await API.user.updateUser(userId, payload);
-  //     const updated = res?.data?.data;
-
-  //     setProfile(updated);
-  //     setForm(normalizeToForm(updated));
-  //     setEditMode(false);
-  //     setErrors({});
-  //     setNotice({ type: "success", message: "✅ Cập nhật hồ sơ thành công." });
-  //   } catch (err) {
-  //     const msg = err?.response?.data?.message || "Cập nhật thất bại. Vui lòng thử lại.";
-  //     setNotice({ type: "error", message: msg });
-  //   } finally {
-  //     setSaving(false);
-  //   }
-
-  //   if (newAvatarDataUrl) {
-  //     updateAvatar(newAvatarDataUrl);
-  //     setAvatarPreview(newAvatarDataUrl);
-  //     setAvatarFile(null);
-  //   }
-  // };
-
   const onUpdate = async () => {
     setNotice(null);
 

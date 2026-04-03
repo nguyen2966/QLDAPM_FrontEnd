@@ -16,6 +16,7 @@ import { MyOrderPage } from "./pages/MyOrderPage.jsx/MyOrderPage.jsx";
 import PaymentResult from "./pages/PaymentResultPage/PaymentResult.jsx";
 import MyTicketsPage from "./pages/MyTicketsPage/MyTicketsPage.jsx";
 import { LoadingState } from "./components/LoadingState/LoadingState.jsx";
+import OrganizerRoute from "./components/ProtectCreateEvent/OrganizerRout.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -68,7 +69,11 @@ export default function App() {
 
         {/* Organizer only */}
         <Route element={<ProtectedRoute allowedRoles={["ORGANIZER"]} />}>
-          <Route path="/my-event/create" element={<CreateEventPage />} />
+          
+          <Route element={<OrganizerRoute />}>
+            <Route path="/my-event/create" element={<CreateEventPage />} />
+          </Route>
+
           <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
 
