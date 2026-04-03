@@ -10,6 +10,7 @@ import { HeroSection } from "./components/HeroSection.jsx";
 import { UpcomingEvents } from "./components/UpComingEvents.jsx";
 import { EventGrid } from "./components/EventGrid.jsx";
 import { SideBar } from "./components/SideBar.jsx";
+import { LoadingState } from "../../components/LoadingState/LoadingState.jsx";
 
 const EVENTS_PER_PAGE = 8;
 
@@ -396,7 +397,7 @@ export function HomePage() {
   }
 
   if (loading.events) {
-    return <div className="home-page home-page__status">Đang tải sự kiện...</div>;
+    return <LoadingState displayText={"Đang tải sự kiện"}/>
   }
 
   if (error) {

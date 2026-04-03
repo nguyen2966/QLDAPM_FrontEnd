@@ -15,6 +15,7 @@ import { ConfirmPaymentPage } from "./pages/ConfirmPaymentPage/ConfirmPaymentPag
 import { MyOrderPage } from "./pages/MyOrderPage.jsx/MyOrderPage.jsx";
 import PaymentResult from "./pages/PaymentResultPage/PaymentResult.jsx";
 import MyTicketsPage from "./pages/MyTicketsPage/MyTicketsPage.jsx";
+import { LoadingState } from "./components/LoadingState/LoadingState.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -31,8 +32,8 @@ const MainLayout = () => {
 // Guard kiểm tra auth + role
 const ProtectedRoute = ({ allowedRoles }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Đang tải...</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return <LoadingState displayText={"Đang tải"} />;
+  if (!user) return <Navigate to="/" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
   return <Outlet />;
 };
@@ -50,7 +51,7 @@ export default function App() {
       <Route element={<MainLayout />}> 
 
        <Route path="/" element={<HomePage />} />
-       
+
         {/* Customer + Organizer */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER", "ORGANIZER"]} />}>
           
