@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "../../hooks/useAuth.js";
 import { API } from "../../api/api.js";
+import { NavBar } from "../../components/NavBar/NavBar";
+import { Footer } from "../../components/Footer/Footer";
 import { UserHero } from "./components/UserHero";
 import { UserNotice } from "./components/UserNotice";
 import { UserSummaryCard } from "./components/UserSummaryCard";
@@ -58,7 +60,7 @@ function validateForm(form) {
 }
 
 export function UserPage() {
-  const { user } = useAuth();
+  const { user, updateAvatar } = useAuth();
 
   const userId = useMemo(() => user?.userId ?? user?.id, [user]);
 
@@ -174,23 +176,24 @@ export function UserPage() {
       return;
     }
 
-    // Build FormData so files are sent as multipart/form-data
-    const fd = new FormData();
-    fd.append("name", form.name.trim());
-    fd.append("phoneNumber", form.phoneNumber.trim());
-
-    if (form.taxCode?.trim()) fd.append("taxCode", form.taxCode.trim());
-    if (form.websiteUrl?.trim()) fd.append("websiteUrl", form.websiteUrl.trim());
-    if (avatarFile) fd.append("avatarImg", avatarFile);
-    if (licenseFile) fd.append("licenseFile", licenseFile);
-
-    console.log(form);
-    console.log(avatarFile);
-    console.log(licenseFile);
+    let newAvatarDataUrl = null;
+    if (avatarFile) {
+      newAvatarDataUrl = await fileToDataUrl(avatarFile);
+    }
 
     setSaving(true);
     try {
-      const res = await API.user.updateUser(userId, fd);   // not a plain object
+      const payload = {
+        name: form.name.trim(),
+        phoneNumber: form.phoneNumber.trim(),
+        taxCode: form.taxCode?.trim() || undefined,
+        websiteUrl: form.websiteUrl?.trim() || undefined,
+        businessLicenseUrl: licenseFile?.name
+          ? `uploaded:${licenseFile.name}`
+          : (form.businessLicenseUrl?.trim() || undefined),
+      };
+
+      const res = await API.user.updateUser(userId, payload);
       const updated = res?.data?.data;
 
       setProfile(updated);
@@ -198,18 +201,17 @@ export function UserPage() {
       setEditMode(false);
       setErrors({});
       setNotice({ type: "success", message: "✅ Cập nhật hồ sơ thành công." });
-
-      // Update avatar preview after a successful save
-      if (avatarFile) {
-        const dataUrl = await fileToDataUrl(avatarFile);
-        setAvatarPreview(dataUrl);
-        setAvatarFile(null);
-      }
     } catch (err) {
       const msg = err?.response?.data?.message || "Cập nhật thất bại. Vui lòng thử lại.";
       setNotice({ type: "error", message: msg });
     } finally {
       setSaving(false);
+    }
+
+    if (newAvatarDataUrl) {
+      updateAvatar(newAvatarDataUrl);
+      setAvatarPreview(newAvatarDataUrl);
+      setAvatarFile(null);
     }
   };
 
@@ -218,12 +220,12 @@ export function UserPage() {
     (form.role || user?.role) === "ORGANIZER"
       ? "Nhà tổ chức"
       : (form.role || user?.role) === "CUSTOMER"
-        ? "Khách hàng"
-        : "Tài khoản";
+      ? "Khách hàng"
+      : "Tài khoản";
 
   return (
     <div className="user-page">
-
+     
       <main className="user-main">
         <UserHero
           editMode={editMode}

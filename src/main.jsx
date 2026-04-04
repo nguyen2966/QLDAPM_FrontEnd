@@ -6,8 +6,6 @@ import { AuthProvider } from "./context/Auth/AuthProvider.jsx";
 import { initFacebookSDK } from "./lib/facebook.js";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { DataProvider } from "./context/Data/DataProvider.jsx";
-import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -18,14 +16,6 @@ initFacebookSDK().then(() => {
       <AuthProvider>
         <BrowserRouter>
           <DataProvider>
-            <ToastContainer 
-              position="top-right"
-              autoClose={2000}
-              hideProgressBar={false}
-              newestOnTop={true} 
-              closeOnClick
-              pauseOnHover
-              theme="light"/>
             <App />
           </DataProvider>
         </BrowserRouter>
