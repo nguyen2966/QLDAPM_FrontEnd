@@ -188,10 +188,11 @@ export function MyEventPage() {
 
   const STATUS_OPTIONS = [
     { key: "all", label: "Tất cả" },
-    { key: "APPROVED", label: "Đang diễn ra" },
+    { key: "APPROVED", label: "Đã được duyệt" },
+    { key: "IN_PROGRESS", label: "Đang diễn ra"},
     { key: "PENDING", label: "Chờ duyệt" },
     { key: "COMPLETED", label: "Đã kết thúc" },
-    { key: "CANCELLED", label: "Đã hủy" },
+    { key: "CANCLED", label: "Đã hủy" },
   ];
 
   return (
