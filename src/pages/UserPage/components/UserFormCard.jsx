@@ -79,7 +79,6 @@ export function UserFormCard({
                   {errors.websiteUrl && <div className="user-error">{errors.websiteUrl}</div>}
                 </div>
               </div>
-
               <div className="user-row">
                 <div className="user-field">
                   <label className="user-label">Giấy phép kinh doanh</label>
@@ -95,20 +94,22 @@ export function UserFormCard({
                     </div>
                   ) : (
                     <>
-                      <label className={`user-fileBtn ${saving ? "user-fileBtn--disabled" : ""}`}>
-                        <input
-                          type="file"
-                          accept=".pdf,.txt,.doc,.docx,image/*"
-                          onChange={onPickLicense}
-                          disabled={saving}
-                        />
+                      <input
+                        className="user-input"
+                        value={form.businessLicenseUrl}
+                        onChange={onChange("businessLicenseUrl")}
+                        disabled={saving}
+                        placeholder="Nhập đường dẫn giấy phép (hoặc chọn tệp bên dưới)"
+                      />
+                      <label className="user-fileBtn user-fileBtn--inline">
+                        <input type="file" accept=".pdf,image/*" onChange={onPickLicense} />
                         Chọn tệp giấy phép
                       </label>
                       <div className="user-help">
                         {licenseFile ? (
                           <>Đã chọn: <b>{licenseFile.name}</b></>
                         ) : (
-                          <span className="user-muted">Chấp nhận: PDF, TXT, DOC, DOCX, hình ảnh</span>
+                          <>Bạn có thể nhập đường dẫn hoặc chọn tệp (minh hoạ).</>
                         )}
                       </div>
                     </>
