@@ -450,6 +450,12 @@
   background: var(--me-red-50);
 }
 
+.me-status-badge.status-inprogress {
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
+}
+
 .me-status-badge.status-pending {
   color: #b45309;
   border-color: #fde68a;
@@ -463,6 +469,12 @@
 }
 
 .me-status-badge.status-cancelled {
+  color: var(--me-muted);
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.me-status-badge.status-rejected {
   color: var(--me-muted);
   border-color: #e5e7eb;
   background: #f9fafb;

@@ -1,0 +1,151 @@
+/* Event cell */
+.me-event-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.me-event-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--me-red-50);
+  flex-shrink: 0;
+}
+
+.me-event-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.me-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--me-red-100), var(--me-red-50));
+}
+
+.me-event-name {
+  font-weight: 600;
+  color: var(--me-ink);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.me-event-code {
+  font-size: 12px;
+  color: var(--me-muted);
+}
+
+/* Venue cell */
+.me-venue-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--me-muted);
+}
+
+.me-venue-time,
+.me-venue-loc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.me-venue-time svg,
+.me-venue-loc svg {
+  color: var(--me-red-500);
+  flex-shrink: 0;
+}
+
+/* Status badge */
+.me-status-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1.5px solid;
+}
+
+.me-status-badge.status-active {
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
+}
+
+.me-status-badge.status-inprogress {
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
+}
+
+.me-status-badge.status-pending {
+  color: #b45309;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.me-status-badge.status-completed {
+  color: #059669;
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.me-status-badge.status-cancelled {
+  color: var(--me-muted);
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.me-status-badge.status-rejected {
+  color: var(--me-muted);
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+/* Sold cell */
+.me-sold-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 100px;
+}
+
+.me-sold-numbers {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--me-ink);
+}
+
+.me-progress-bar {
+  height: 6px;
+  background: var(--me-red-100);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.me-progress-fill {
+  height: 100%;
+  background: var(--me-red-600);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* Row action */
+.me-row-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--me-muted);
+  transition: background 0.15s;
+}
+
+.me-row-action:hover {
+  background: var(--me-red-50);
+  color: var(--me-red-600);
+}
