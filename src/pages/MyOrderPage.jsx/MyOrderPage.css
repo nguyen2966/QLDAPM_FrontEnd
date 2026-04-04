@@ -443,3 +443,8 @@
     font-size: 22px;
   }
 }
+
+.detail-btn:disabled {
+  background: #000000;
+  cursor: not-allowed;
+}

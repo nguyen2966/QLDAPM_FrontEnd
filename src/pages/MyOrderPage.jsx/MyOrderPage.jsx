@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { API } from "../../api/api.js";
 import "./MyOrderPage.css";
+import {useNavigate} from "react-router-dom";
 
 const TABS = [
   { key: "all", label: "Tất cả" },
@@ -92,6 +93,7 @@ export function MyOrderPage() {
   const [search, setSearch] = useState("");
   const [tempSearch, setTempSearch] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchOrderDetails() {
@@ -102,7 +104,7 @@ export function MyOrderPage() {
         setOrders(data);
         setLoading(false);
       } catch (error) {
-        setError(getErrorMessage(error, "Không thể tải dữ liệu sự kiện."));
+        console.error(error);
         setLoading(false);
       }
     }
@@ -252,7 +254,13 @@ export function MyOrderPage() {
                   </div>
 
                   <div className="order-action">
-                    <button className="detail-btn">Chi tiết</button>
+                    <button
+                        className={`detail-btn ${!selectedTickets[cardKey] ? 'disabled' : ''}`}
+                        disabled={!selectedTickets[cardKey]}
+                        onClick={() => navigate(`/user/my-tickets?ticketCode=${selectedTickets[cardKey]}`)}
+                    >
+                      Chi tiết
+                    </button>
                   </div>
                 </div>
               );

@@ -165,15 +165,15 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
         Sự kiện sắp diễn ra
       </a>
 
-      <Link className="home-nav__link" to="/order/my-order">
+      {authUser && <Link className="home-nav__link" to="/order/my-order">
         Đơn hàng của tôi
-      </Link>
+      </Link>}
     </nav>
   );
 
   const renderOrganizerNav = () => (
     <nav className="home-nav" aria-label="Điều hướng nhà tổ chức">
-      <a
+      {/* <a
         className="home-nav__link"
         href="/"
         onClick={(e) => {
@@ -182,9 +182,9 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
         }}
       >
         Trang chủ
-      </a>
+      </a> */}
 
-      <Link className="home-nav__link" to="/my-events">
+      <Link className="home-nav__link" to="/">
         Sự kiện của tôi
       </Link>
 
@@ -192,9 +192,9 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
         Tạo sự kiện
       </Link>
 
-      <Link className="home-nav__link" to="/my-event">
-        Thống kê doanh thu
-      </Link>
+      {/* <Link className="home-nav__link" to="/my-event">
+        Thống kê chi tiết
+      </Link> */}
 
       <a
         className="home-nav__link"
