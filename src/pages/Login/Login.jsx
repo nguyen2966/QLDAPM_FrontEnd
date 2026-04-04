@@ -7,7 +7,6 @@ import { useGoogleLogin } from "@react-oauth/google";
 import Image from "../../assets/Red.jpg";
 import { API } from "../../api/api.js";
 import { useAuth } from "../../hooks/useAuth.js";
-import { toast } from "react-toastify";
 
 
 // ─── Icon components ──────────────────────────────────────────────────────────
@@ -110,7 +109,6 @@ export function Login() {
     } catch (err) {
       const msg = err.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.";
       setError(msg);
-      toast.error(msg)
     } finally {
       setLoading(false);
     }
@@ -232,8 +230,7 @@ export function Login() {
                 </label>
               </div>
 
-              {/* Fix để xài toast thay cho cái này. */}
-              {/* {error && <div className="login-error">{error}</div>} */}
+              {error && <div className="login-error">{error}</div>}
 
               <button
                 type="submit"
@@ -250,14 +247,14 @@ export function Login() {
 
             {mode === "customer" ? (
               <>
-                {/* <button
+                <button
                   type="button"
                   className="login-btn login-btn--outline"
                   onClick={() => handleSwitchMode("organizer")}
                   disabled={loading}
                 >
                   Đăng nhập với tư cách Nhà tổ chức
-                </button> */}
+                </button>
 
                 {/* Social login chỉ dành cho customer */}
                 <div className="login-socials">

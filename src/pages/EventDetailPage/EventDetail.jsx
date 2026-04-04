@@ -7,7 +7,6 @@ import { BookingGrid } from "./components/BookingGrid/BookingGrid.jsx";
 import { DetailGrid } from "./components/DetailGrid/DetailGrid.jsx";
 import { TicketClassGrid } from "./components/TicketClassGrid/TicketClassGrid.jsx";
 import { TermsReview } from "./components/TermsReviewBlock/TermsReview.jsx";
-import { LoadingState } from "../../components/LoadingState/LoadingState.jsx";
 
 export const EventDetail = () => {
   const { eventId } = useParams();
@@ -54,7 +53,7 @@ export const EventDetail = () => {
         />
 
         <TermsReview/>
-      </> : <LoadingState displayText={"Đang tải sự kiện"}/>}
+      </> : <p>hello</p>}
     </div>
   );
 };

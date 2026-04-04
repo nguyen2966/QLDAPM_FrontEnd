@@ -55,17 +55,12 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      
-
       {/* Tất cả route bên dưới đều có NavBar + Footer */}
-      <Route element={<MainLayout />}> 
-
-       <Route path="/" element={<HomePage />} />
-
+      <Route element={<MainLayout />}>
         {/* Customer + Organizer */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER", "ORGANIZER"]} />}>
-          
           <Route path="/user" element={<UserPage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path = "/:eventId" element ={<EventDetail/>}/>
           <Route path = "/order/:eventId" element={<OrderPage/>}/>
           
@@ -78,11 +73,7 @@ export default function App() {
 
         {/* Organizer only */}
         <Route element={<ProtectedRoute allowedRoles={["ORGANIZER"]} />}>
-          
-          <Route element={<OrganizerRoute />}>
-            <Route path="/my-event/create" element={<CreateEventPage />} />
-          </Route>
-
+          <Route path="/my-event/create" element={<CreateEventPage />} />
           <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
 

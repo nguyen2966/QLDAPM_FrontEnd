@@ -19,12 +19,12 @@ export const DataProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   const fetchEvents = useCallback(async () => {
-    // if (!accessToken) {
-    //   setEvents([]);
-    //   setVenues([]);
-    //   setLoading({ events: false, venues: false });
-    //   return;
-    // }
+    if (!accessToken) {
+      setEvents([]);
+      setVenues([]);
+      setLoading({ events: false, venues: false });
+      return;
+    }
 
     setLoading({ events: true, venues: true });
     setError(null);
@@ -54,7 +54,7 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading({ events: false, venues: false });
     }
-  }, []);
+  }, [accessToken]);
 
   const refreshVenues = useCallback(async () => {
     const DanhSachVenue = await API.event.getVenues();
@@ -64,12 +64,12 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     if (authLoading) return;
 
-    // if (!accessToken) {
-    //   setEvents([]);
-    //   setVenues([]);
-    //   setLoading({ events: false, venues: false });
-    //   return;
-    // }
+    if (!accessToken) {
+      setEvents([]);
+      setVenues([]);
+      setLoading({ events: false, venues: false });
+      return;
+    }
 
     fetchEvents();
   }, [authLoading, accessToken, fetchEvents]);
