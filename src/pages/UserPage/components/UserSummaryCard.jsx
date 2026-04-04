@@ -4,6 +4,10 @@ export function UserSummaryCard({
   editMode, avatarFile, onPickAvatar,
   getInitials,
 }) {
+
+  const organizer = profile?.organizer;
+  const isApproved = organizer?.isApproved;
+
   return (
     <aside className="user-card user-card--summary">
       <div className="user-avatarWrap">
@@ -38,6 +42,13 @@ export function UserSummaryCard({
           <span className="user-miniKey">Thời điểm tạo tài khoản</span>
           <span className="user-miniVal">
             {profile?.createdAt ? new Date(profile.createdAt).toLocaleString() : "—"}
+          </span>
+        </div>
+
+        <div className="user-miniRow">
+          <span className="user-miniKey">Trạng thái</span>
+          <span className="user-miniVal">
+            {isApproved ? (<p>Đã duyệt</p>) : (<p>Chờ duyệt</p>)}
           </span>
         </div>
       </div>

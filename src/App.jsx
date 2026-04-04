@@ -15,6 +15,8 @@ import { ConfirmPaymentPage } from "./pages/ConfirmPaymentPage/ConfirmPaymentPag
 import { MyOrderPage } from "./pages/MyOrderPage.jsx/MyOrderPage.jsx";
 import PaymentResult from "./pages/PaymentResultPage/PaymentResult.jsx";
 import MyTicketsPage from "./pages/MyTicketsPage/MyTicketsPage.jsx";
+import { LoadingState } from "./components/LoadingState/LoadingState.jsx";
+import OrganizerRoute from "./components/ProtectCreateEvent/OrganizerRout.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -31,8 +33,8 @@ const MainLayout = () => {
 // Guard kiểm tra auth + role
 const ProtectedRoute = ({ allowedRoles }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Đang tải...</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return <LoadingState displayText={"Đang tải"} />;
+  if (!user) return <Navigate to="/" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
   return <Outlet />;
 };
@@ -44,12 +46,17 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
+      
+
       {/* Tất cả route bên dưới đều có NavBar + Footer */}
-      <Route element={<MainLayout />}>
+      <Route element={<MainLayout />}> 
+
+       <Route path="/" element={<HomePage />} />
+
         {/* Customer + Organizer */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER", "ORGANIZER"]} />}>
+          
           <Route path="/user" element={<UserPage />} />
-          <Route path="/" element={<HomePage />} />
           <Route path = "/:eventId" element ={<EventDetail/>}/>
           <Route path = "/order/:eventId" element={<OrderPage/>}/>
           
@@ -62,7 +69,11 @@ export default function App() {
 
         {/* Organizer only */}
         <Route element={<ProtectedRoute allowedRoles={["ORGANIZER"]} />}>
-          <Route path="/my-event/create" element={<CreateEventPage />} />
+          
+          <Route element={<OrganizerRoute />}>
+            <Route path="/my-event/create" element={<CreateEventPage />} />
+          </Route>
+
           <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
 

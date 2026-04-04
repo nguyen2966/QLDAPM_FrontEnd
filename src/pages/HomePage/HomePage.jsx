@@ -10,6 +10,7 @@ import { HeroSection } from "./components/HeroSection.jsx";
 import { UpcomingEvents } from "./components/UpComingEvents.jsx";
 import { EventGrid } from "./components/EventGrid.jsx";
 import { SideBar } from "./components/SideBar.jsx";
+import { LoadingState } from "../../components/LoadingState/LoadingState.jsx";
 
 const EVENTS_PER_PAGE = 8;
 
@@ -392,108 +393,11 @@ export function HomePage() {
   };
 
   if (isOrganizer) {
-    // return (
-    //   <div className="home-page">
-    //     <main className="home-main" id="trang-chu">
-    //       <section className="organizer-home">
-    //         <div className="organizer-home__head">
-    //           <div>
-    //             <p className="organizer-home__eyebrow">KHU VỰC NHÀ TỔ CHỨC</p>
-    //             <h1 className="organizer-home__title">Sự kiện của tôi</h1>
-    //           </div>
-    //         </div>
-
-    //         {loadingMyEvents ? (
-    //           <div className="home-page__status">Đang tải sự kiện của bạn...</div>
-    //         ) : errorMyEvents ? (
-    //           <div className="home-page__status">{errorMyEvents}</div>
-    //         ) : !myEvents.length ? (
-    //           <div className="organizer-empty">
-    //             <h3>Bạn chưa có sự kiện nào</h3>
-    //             <p>Hãy vào mục “Tạo sự kiện” trên thanh điều hướng để bắt đầu tạo sự kiện mới.</p>
-    //           </div>
-    //         ) : (
-    //           <div className="organizer-grid">
-    //             {myEvents.map((event) => (
-    //               <article key={event.eventId} className="organizer-card">
-    //                 <div className="organizer-card__imageWrap">
-    //                   {event.eventImgUrl ? (
-    //                     <img
-    //                       className="organizer-card__image"
-    //                       src={event.eventImgUrl}
-    //                       alt={`Ảnh sự kiện: ${event.eventName}`}
-    //                     />
-    //                   ) : (
-    //                     <div className="organizer-card__image organizer-card__image--empty">
-    //                       Không có ảnh
-    //                     </div>
-    //                   )}
-    //                 </div>
-
-    //                 <div className="organizer-card__body">
-    //                   <div className="organizer-card__topRow">
-    //                     <div className="organizer-card__genre">
-    //                       {event.genre || "Sự kiện"}
-    //                     </div>
-
-    //                     <span className={`organizer-card__status ${layClassTrangThai(event.status)}`}>
-    //                       {layNhanTrangThai(event.status)}
-    //                     </span>
-    //                   </div>
-
-    //                   <h3 className="organizer-card__title">{event.eventName}</h3>
-
-    //                   <div className="organizer-card__meta">
-    //                     <div className="organizer-card__metaRow">
-    //                       <span>📅</span>
-    //                       <span>{dinhDangNgay(event.dateToStart)}</span>
-    //                     </div>
-
-    //                     <div className="organizer-card__metaRow">
-    //                       <span>📍</span>
-    //                       <span>{event.venue?.venueName || "Chưa có địa điểm"}</span>
-    //                     </div>
-
-    //                     <div className="organizer-card__metaRow">
-    //                       <span>🎫</span>
-    //                       <span>
-    //                         {Array.isArray(event.ticketClasses)
-    //                           ? `${event.ticketClasses.length} hạng vé`
-    //                           : "Chưa có hạng vé"}
-    //                       </span>
-    //                     </div>
-
-    //                     <div className="organizer-card__metaRow">
-    //                       <span>💳</span>
-    //                       <span>
-    //                         Từ {dinhDangVND(layGiaThapNhatTheoLoai(event.ticketClasses || []))}
-    //                       </span>
-    //                     </div>
-    //                   </div>
-
-    //                   <div className="organizer-card__footer">
-    //                     <button
-    //                       type="button"
-    //                       className="home-btn home-btn--primary organizer-card__editBtn"
-    //                       onClick={() => alert(`Demo: Chỉnh sửa sự kiện "${event.eventName}"`)}
-    //                     >
-    //                       Chỉnh sửa sự kiện
-    //                     </button>
-    //                   </div>
-    //                 </div>
-    //               </article>
-    //             ))}
-    //           </div>
-    //         )}
-    //       </section>
-    //     </main>
-    //   </div>
-    // );
     return <Navigate to="/my-event" replace />
   }
 
   if (loading.events) {
-    return <div className="home-page home-page__status">Đang tải sự kiện...</div>;
+    return <LoadingState displayText={"Đang tải sự kiện"}/>
   }
 
   if (error) {

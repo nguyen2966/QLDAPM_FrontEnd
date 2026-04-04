@@ -165,9 +165,9 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
         Sự kiện sắp diễn ra
       </a>
 
-      <Link className="home-nav__link" to="/order/my-order">
+      {authUser && <Link className="home-nav__link" to="/order/my-order">
         Đơn hàng của tôi
-      </Link>
+      </Link>}
     </nav>
   );
 
