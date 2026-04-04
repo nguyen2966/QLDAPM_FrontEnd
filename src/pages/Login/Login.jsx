@@ -7,6 +7,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import Image from "../../assets/Red.jpg";
 import { API } from "../../api/api.js";
 import { useAuth } from "../../hooks/useAuth.js";
+import { toast } from "react-toastify";
 
 
 // ─── Icon components ──────────────────────────────────────────────────────────
@@ -103,6 +104,7 @@ export function Login() {
     } catch (err) {
       const msg = err.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.";
       setError(msg);
+      toast.error(msg)
     } finally {
       setLoading(false);
     }
@@ -224,7 +226,8 @@ export function Login() {
                 </label>
               </div>
 
-              {error && <div className="login-error">{error}</div>}
+              {/* Fix để xài toast thay cho cái này. */}
+              {/* {error && <div className="login-error">{error}</div>} */}
 
               <button
                 type="submit"
