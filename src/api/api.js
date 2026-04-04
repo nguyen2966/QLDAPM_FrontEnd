@@ -59,6 +59,7 @@ export const API = {
 
   payment: {
     createLinkMomo: (orderId, seatIds, amount) => axiosInstance.post(`/payment/momo-link`, { orderId, seatIds, amount }),
+    freePay: (orderId, seatIds) => axiosInstance.post(`/payment/free-payment`, { orderId, seatIds }),
   },
 
   QR: {

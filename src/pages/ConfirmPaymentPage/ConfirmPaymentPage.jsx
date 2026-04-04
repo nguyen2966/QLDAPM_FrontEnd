@@ -4,12 +4,19 @@ import PaymentForm from "./PaymentForm/paymentForm.jsx";
 import PaymentMethod from "./paymentMethod/PaymentMethod.jsx";
 import PaymentInfo from "./PaymentInfo/PaymentInfo.jsx";
 import {API} from "../../api/api.js";
+import {CustomToast} from "../../components/Toast/toast.jsx";
 
 export function ConfirmPaymentPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState("momo");
+
+    const [toastConfig, setToastConfig] = useState(null);
+
+    const showToast = (message, type = "info") => {
+        setToastConfig({ message, type });
+    };
 
     // Thời gian giữ ghế: 5 phút = 300 giây
     const [timeLeft, setTimeLeft] = useState(300);
@@ -56,13 +63,35 @@ export function ConfirmPaymentPage() {
 
     const handlePayment = async () => {
         if (timeLeft <= 0) {
-            alert("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!");
-            return navigate(-1);
+            showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
+            setTimeout(() => navigate(-1), 2000);
         }
 
         if (!formData.fullName || !formData.email || !formData.phone) {
-            alert("Vui lòng điền đầy đủ thông tin người đặt vé!");
+            showToast("Vui lòng điền đầy đủ thông tin người đặt vé!", "warning");
             return;
+        }
+
+
+        if (Number(totalAmount) === 0) {
+            try{
+                setLoading(true);
+                const result = await API.payment.freePay(orderId, seatIds);
+                console.log(result);
+
+                showToast("Đăng ký vé thành công! Đang chuyển hướng...", "success");
+
+                // Đợi 1.5 giây để hiện Toast xong rồi mới chuyển trang
+                setTimeout(() => {
+                    navigate(`/order/result?orderId=${orderId}&success=true&amount=0`);
+                }, 1500);
+                return;
+            } catch (e){
+                showToast("Đã xảy ra lỗi khi đăng ký vé. Vui lòng thử lại!", "error");
+                throw e
+            } finally {
+                setLoading(false);
+            }
         }
 
         if (paymentMethod !== "momo") return;
@@ -75,11 +104,11 @@ export function ConfirmPaymentPage() {
             if (payUrl) {
                 window.location.href = payUrl;
             } else {
-                alert("Lỗi: Không lấy được link thanh toán từ server.");
+                showToast("Không lấy được link thanh toán từ server.", "error");
             }
         } catch (error) {
             console.error("Lỗi khởi tạo MoMo:", error);
-            alert(error.message || "Khởi tạo thanh toán thất bại. Vui lòng thử lại!");
+            showToast(error.message || "Khởi tạo thanh toán thất bại!", "error");
         } finally {
             setLoading(false);
         }
@@ -140,6 +169,15 @@ export function ConfirmPaymentPage() {
 
                 </div>
             </div>
+
+            {toastConfig && (
+                <CustomToast
+                    message={toastConfig.message}
+                    type={toastConfig.type}
+                    // Truyền hàm đóng: khi toast tự tắt sau 3s, nó sẽ set state về null
+                    onClose={() => setToastConfig(null)}
+                />
+            )}
         </div>
     );
 }
