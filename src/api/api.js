@@ -67,5 +67,9 @@ export const API = {
 
   ticket: {
     getInfo: (ticketCode) => axiosInstance.get(`/ticket/info?ticketCode=${ticketCode}`),
+  },
+
+  admin: {
+    //Sau khi hiện thực các API backend thì thêm vào đây
   }
 };

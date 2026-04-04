@@ -17,6 +17,9 @@ import PaymentResult from "./pages/PaymentResultPage/PaymentResult.jsx";
 import MyTicketsPage from "./pages/MyTicketsPage/MyTicketsPage.jsx";
 import { LoadingState } from "./components/LoadingState/LoadingState.jsx";
 import OrganizerRoute from "./components/ProtectCreateEvent/OrganizerRout.jsx";
+import { AdminPanel } from "./pages/AdminPages/AminPanel.jsx";
+import { OrganizerApprovalPage } from "./pages/AdminPages/OrganizerApprovalPage/OrganizerApprovalPage.jsx";
+import { EventApprovalPage } from "./pages/AdminPages/EventApprovalPage/EventApprovalPage.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -33,9 +36,15 @@ const MainLayout = () => {
 // Guard kiểm tra auth + role
 const ProtectedRoute = ({ allowedRoles }) => {
   const { user, loading } = useAuth();
+
   if (loading) return <LoadingState displayText={"Đang tải"} />;
-  if (!user) return <Navigate to="/" replace />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
   return <Outlet />;
 };
 
@@ -76,6 +85,15 @@ export default function App() {
 
           <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
+
+         {/* Admin only */}
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element = {<AdminPanel/>}/>
+          <Route path="/admin/organizer" element = {<OrganizerApprovalPage/>}/>
+          <Route path="/admin/event" element = {<EventApprovalPage/>}/>
+        </Route>
+
+        
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
