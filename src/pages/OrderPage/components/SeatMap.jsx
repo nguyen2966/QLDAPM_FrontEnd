@@ -91,9 +91,12 @@ function buildSeatPointsFromBlock(block, seatLayoutMap) {
   return points;
 }
 
-function getSeatDisplayState(seat, isSelected) {
+function getSeatDisplayState(seat, isSelected, isMyLockedSeat) {
   if (!seat) return "missing";
   if (isSelected) return "selected";
+
+  if (isMyLockedSeat) return "available";
+
   return String(seat.status || "AVAILABLE").toLowerCase();
 }
 
@@ -110,13 +113,13 @@ function getSeatTitle(seat, displayState) {
   return `${seat.name} - ${statusLabelMap[displayState] || displayState} - ${seat.ticketClass?.className || "Không rõ hạng vé"}`;
 }
 
-function SeatCell({ seat, selectedIds, onSelect }) {
+function SeatCell({ seat, selectedIds, isMyLockedSeat, onSelect }) {
   if (!seat) {
     return <div className="order-seat-map__seat order-seat-map__seat--placeholder" aria-hidden="true" />;
   }
 
   const isSelected = selectedIds.has(seat.seatId);
-  const displayState = getSeatDisplayState(seat, isSelected);
+  const displayState = getSeatDisplayState(seat, isSelected, isMyLockedSeat);
   const canClick = displayState === "available" || displayState === "selected";
 
   return (
@@ -144,6 +147,7 @@ export function SeatMap({
   seats,
   ticketClasses,
   selectedIds,
+  myLockedSeats,
   onSelect,
 }) {
   const blocks = Array.isArray(seatLayoutMap?.seatLayout) ? seatLayoutMap.seatLayout : [];
@@ -275,6 +279,7 @@ export function SeatMap({
                     key={seat?.seatId || `${x}-${y}`}
                     seat={seat}
                     selectedIds={selectedIds}
+                    isMyLockedSeat={myLockedSeats ? myLockedSeats.has(seat?.seatId) : false}
                     onSelect={onSelect}
                   />
                 );

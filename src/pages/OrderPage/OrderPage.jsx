@@ -518,10 +518,21 @@ export function OrderPage() {
 
   const [eventDetail, setEventDetail] = useState(location.state?.eventDetail ?? null);
   const [seats, setSeats] = useState(location.state?.eventDetail?.seats ?? []);
-  const [selectedIds, setSelectedIds] = useState(new Set());
   const [loading, setLoading] = useState(!location.state?.eventDetail);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Đọc dữ liệu từ sessionStorage (nếu có)
+  const savedOrder = JSON.parse(sessionStorage.getItem(`activeOrder_${eventId}`) || "{}");
+
+  // Khởi tạo state với dữ liệu đã lưu
+  const [existingOrderId, setExistingOrderId] = useState(savedOrder.orderId || null);
+  const [myLockedSeats, setMyLockedSeats] = useState(new Set(savedOrder.seatIds || []));
+  const [selectedIds, setSelectedIds] = useState(new Set(savedOrder.seatIds || []));
+
+  useEffect(() => {
+    sessionStorage.removeItem(`activeOrder_${eventId}`);
+  }, [eventId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -565,7 +576,7 @@ export function OrderPage() {
 
       previous.forEach((seatId) => {
         const seat = seatsById.get(seatId);
-        if (seat?.status === "AVAILABLE") {
+        if (seat?.status === "AVAILABLE" || myLockedSeats.has(seatId)) {
           next.add(seatId);
         } else {
           changed = true;
@@ -574,7 +585,7 @@ export function OrderPage() {
 
       return changed ? next : previous;
     });
-  }, [seatsById]);
+  }, [seatsById, myLockedSeats]);
 
   useSeatSocket(
     Number(eventId),
@@ -586,6 +597,8 @@ export function OrderPage() {
       if (status !== "AVAILABLE") {
         setSelectedIds((previous) => {
           if (!previous.has(seatId)) return previous;
+          if (myLockedSeats.has(seatId)) return previous;
+
           const next = new Set(previous);
           next.delete(seatId);
           return next;
@@ -631,7 +644,7 @@ export function OrderPage() {
         return next;
       }
 
-      if (seat.status !== "AVAILABLE") return previous;
+      if (seat.status !== "AVAILABLE" && !myLockedSeats.has(seat.seatId)) return previous;
 
       if (next.size >= MAX_SELECTABLE_SEATS) {
         setError("Backend chỉ cho đặt tối đa 5 ghế. Vui lòng bỏ bớt ghế trước khi chọn tiếp.");
@@ -655,16 +668,36 @@ export function OrderPage() {
     setError("");
 
     try {
-      const response = await API.order.createOrder({ seatIds: selectedSeatIds });
-      const data = response.data?.data;
+      let orderData;
 
-      navigate(`/order/confirm/${data?.order?.orderId}`, {
+      if (existingOrderId) {
+        // Gọi API Update đơn hàng (Backend sẽ trả về thời gian holdExpiredAt mới)
+        const response = await API.order.updateOrder(existingOrderId, { seatIds: selectedSeatIds });
+        orderData = response.data?.data;
+      } else {
+        // Gọi API Create mới
+        const response = await API.order.createOrder({ seatIds: selectedSeatIds });
+        orderData = response.data?.data;
+      }
+
+      const currentOrderId = orderData?.order?.orderId || existingOrderId;
+      const currentExpiredAt = orderData?.holdExpiredAt || orderData?.order?.expiredAt;
+
+      // LƯU VÀO SESSION STORAGE (Để sống sót qua nút Browser Back)
+      sessionStorage.setItem(`activeOrder_${eventId}`, JSON.stringify({
+        orderId: currentOrderId,
+        seatIds: selectedSeatIds
+      }));
+      setExistingOrderId(currentOrderId);
+      setMyLockedSeats(new Set(selectedSeatIds));
+
+      navigate(`/order/confirm/${currentOrderId}`, {
         state: {
-          orderId: data?.order?.orderId,
+          eventId: eventId, // Bắt buộc truyền eventId sang
+          orderId: currentOrderId,
           seatIds: selectedSeatIds,
-          holdExpiredAt: data?.holdExpiredAt || data?.order?.expiredAt,
-          totalAmount: data?.order?.totalAmount || totalAmount,
-          status: data?.order?.status || "PENDING",
+          holdExpiredAt: currentExpiredAt, // Bắt buộc truyền để đồng bộ đếm ngược
+          totalAmount: orderData?.order?.totalAmount || totalAmount,
           eventName: eventDetail.eventName || "Sự kiện"
         },
       });
@@ -707,6 +740,7 @@ export function OrderPage() {
             seats={seats}
             ticketClasses={eventDetail.ticketClasses || []}
             selectedIds={selectedIds}
+            myLockedSeats={myLockedSeats}
             onSelect={handleSelectSeat}
           />
         </div>

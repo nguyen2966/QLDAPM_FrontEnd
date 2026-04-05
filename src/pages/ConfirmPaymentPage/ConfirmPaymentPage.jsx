@@ -14,15 +14,16 @@ export function ConfirmPaymentPage() {
 
     const [toastConfig, setToastConfig] = useState(null);
 
+    // Thêm eventId và holdExpiredAt vào danh sách lấy từ location.state
+    const { orderId, seatIds, totalAmount, eventName, holdExpiredAt, eventId } = location.state || {};
+
+    // 1. BỎ hardcode 300 giây, set giá trị mặc định là 0
+    const [timeLeft, setTimeLeft] = useState(0);
+
     const showToast = (message, type = "info") => {
         setToastConfig({ message, type });
     };
 
-    // Thời gian giữ ghế: 5 phút = 300 giây
-    const [timeLeft, setTimeLeft] = useState(300);
-
-    // Lấy data từ trang chọn ghế truyền sang
-    const { orderId, seatIds, totalAmount, eventName } = location.state || {};
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -40,14 +41,33 @@ export function ConfirmPaymentPage() {
 
     // Xử lý đồng hồ đếm ngược
     useEffect(() => {
-        if (timeLeft <= 0) return;
+        if (!holdExpiredAt) return;
+
+        // Hàm tính toán số giây còn lại dựa trên giờ hệ thống và giờ backend
+        const calculateTimeLeft = () => {
+            const now = new Date().getTime();
+            const expiredTime = new Date(holdExpiredAt).getTime();
+            const diff = Math.floor((expiredTime - now) / 1000);
+            return diff > 0 ? diff : 0;
+        };
+
+        // Cập nhật ngay lần đầu tiên
+        setTimeLeft(calculateTimeLeft());
 
         const timerId = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
+            const remaining = calculateTimeLeft();
+            setTimeLeft(remaining);
+
+            if (remaining <= 0) {
+                clearInterval(timerId);
+                showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
+                // Tự động đá về trang sơ đồ ghế khi hết giờ
+                setTimeout(() => navigate(`/order/${eventId}`), 2000);
+            }
         }, 1000);
 
-        return () => clearInterval(timerId); // Cleanup interval khi component unmount
-    }, [timeLeft]);
+        return () => clearInterval(timerId);
+    }, [holdExpiredAt, eventId, navigate]);
 
     // Format giây thành dạng MM:SS
     const formatTime = (seconds) => {
@@ -64,7 +84,8 @@ export function ConfirmPaymentPage() {
     const handlePayment = async () => {
         if (timeLeft <= 0) {
             showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
-            setTimeout(() => navigate(-1), 2000);
+            setTimeout(() => navigate(`/order/${eventId}`), 2000);
+            return;
         }
 
         if (!formData.fullName || !formData.email || !formData.phone) {
@@ -77,7 +98,7 @@ export function ConfirmPaymentPage() {
             try{
                 setLoading(true);
                 const result = await API.payment.freePay(orderId, seatIds);
-                console.log(result);
+                sessionStorage.removeItem(`activeOrder_${eventId}`);
 
                 showToast("Đăng ký vé thành công! Đang chuyển hướng...", "success");
 
@@ -102,6 +123,7 @@ export function ConfirmPaymentPage() {
 
             const payUrl = response.data?.data?.data.payUrl;
             if (payUrl) {
+                sessionStorage.removeItem(`activeOrder_${eventId}`);
                 window.location.href = payUrl;
             } else {
                 showToast("Không lấy được link thanh toán từ server.", "error");
