@@ -15,9 +15,11 @@ import { ConfirmPaymentPage } from "./pages/ConfirmPaymentPage/ConfirmPaymentPag
 import { MyOrderPage } from "./pages/MyOrderPage.jsx/MyOrderPage.jsx";
 import PaymentResult from "./pages/PaymentResultPage/PaymentResult.jsx";
 import MyTicketsPage from "./pages/MyTicketsPage/MyTicketsPage.jsx";
+import { AdminPanel } from "./pages/AdminPages/AminPanel.jsx";
 import { OrganizerApprovalPage } from "./pages/AdminPages/OrganizerApprovalPage/OrganizerApprovalPage.jsx";
 import { EventApprovalPage } from "./pages/AdminPages/EventApprovalPage/EventApprovalPage.jsx";
 import { LoadingState } from "./components/LoadingState/LoadingState.jsx";
+
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -71,16 +73,17 @@ export default function App() {
 
         {/* Organizer only */}
         <Route element={<ProtectedRoute allowedRoles={["ORGANIZER"]} />}>
+          
           <Route path="/my-event/create" element={<CreateEventPage />} />
           <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
 
          {/* Admin only */}
-        {/* <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element = {<AdminPanel/>}/>
           <Route path="/admin/organizer" element = {<OrganizerApprovalPage/>}/>
           <Route path="/admin/event" element = {<EventApprovalPage/>}/>
-        </Route> */}
+        </Route>
 
         
 

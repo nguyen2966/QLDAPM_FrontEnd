@@ -499,6 +499,7 @@ import { EventHero } from "./components/EventHero.jsx";
 import { SeatStats } from "./components/SeatStats.jsx";
 import { OrderSummaryPanel } from "./components/OrderSummaryPanel.jsx";
 import "./OrderPage.css";
+import { LoadingState } from "../../components/LoadingState/LoadingState.jsx";
 
 const MAX_SELECTABLE_SEATS = 5;
 
@@ -709,9 +710,7 @@ export function OrderPage() {
 
   if (loading) {
     return (
-        <div className="order-page order-page--loading">
-          <div className="order-page__state-card">Đang tải sơ đồ ghế...</div>
-        </div>
+        <LoadingState displayText={"Đang tải sơ đồ ghết"}/>
     );
   }
 
