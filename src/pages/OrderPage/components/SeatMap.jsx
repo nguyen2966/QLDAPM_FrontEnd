@@ -60,20 +60,20 @@ function buildSeatPointsFromBlock(block, seatLayoutMap) {
   const position = block?.position || {};
 
   const startCol = clamp(
-    Math.round((Number(position.x || 0) / Math.max(canvasWidth, 1)) * gridCols) + 1,
-    1,
-    gridCols,
+      Math.round((Number(position.x || 0) / Math.max(canvasWidth, 1)) * gridCols) + 1,
+      1,
+      gridCols,
   );
   const startRow = clamp(
-    Math.round((Number(position.y || 0) / Math.max(canvasHeight, 1)) * gridRows) + 1,
-    1,
-    gridRows,
+      Math.round((Number(position.y || 0) / Math.max(canvasHeight, 1)) * gridRows) + 1,
+      1,
+      gridRows,
   );
 
   const deletedSet = new Set(
-    Array.isArray(block?.deletedSeats)
-      ? block.deletedSeats.map((seat) => `${seat.row}-${seat.col}`)
-      : [],
+      Array.isArray(block?.deletedSeats)
+          ? block.deletedSeats.map((seat) => `${seat.row}-${seat.col}`)
+          : [],
   );
 
   const points = [];
@@ -91,9 +91,12 @@ function buildSeatPointsFromBlock(block, seatLayoutMap) {
   return points;
 }
 
-function getSeatDisplayState(seat, isSelected) {
+function getSeatDisplayState(seat, isSelected, isMyLockedSeat) {
   if (!seat) return "missing";
   if (isSelected) return "selected";
+
+  if (isMyLockedSeat) return "available";
+
   return String(seat.status || "AVAILABLE").toLowerCase();
 }
 
@@ -110,42 +113,43 @@ function getSeatTitle(seat, displayState) {
   return `${seat.name} - ${statusLabelMap[displayState] || displayState} - ${seat.ticketClass?.className || "Không rõ hạng vé"}`;
 }
 
-function SeatCell({ seat, selectedIds, onSelect }) {
+function SeatCell({ seat, selectedIds, isMyLockedSeat, onSelect }) {
   if (!seat) {
     return <div className="order-seat-map__seat order-seat-map__seat--placeholder" aria-hidden="true" />;
   }
 
   const isSelected = selectedIds.has(seat.seatId);
-  const displayState = getSeatDisplayState(seat, isSelected);
+  const displayState = getSeatDisplayState(seat, isSelected, isMyLockedSeat);
   const canClick = displayState === "available" || displayState === "selected";
 
   return (
-    <button
-      type="button"
-      className={`order-seat-map__seat order-seat-map__seat--${displayState}`}
-      style={
-        displayState === "available"
-          ? {
-              backgroundColor: seat.ticketClass?.color || "#22c55e",
-              borderColor: seat.ticketClass?.color || "#22c55e",
-            }
-          : undefined
-      }
-      title={getSeatTitle(seat, displayState)}
-      aria-label={getSeatTitle(seat, displayState)}
-      onClick={() => canClick && onSelect(seat)}
-      disabled={!canClick}
-    />
+      <button
+          type="button"
+          className={`order-seat-map__seat order-seat-map__seat--${displayState}`}
+          style={
+            displayState === "available"
+                ? {
+                  backgroundColor: seat.ticketClass?.color || "#22c55e",
+                  borderColor: seat.ticketClass?.color || "#22c55e",
+                }
+                : undefined
+          }
+          title={getSeatTitle(seat, displayState)}
+          aria-label={getSeatTitle(seat, displayState)}
+          onClick={() => canClick && onSelect(seat)}
+          disabled={!canClick}
+      />
   );
 }
 
 export function SeatMap({
-  seatLayoutMap,
-  seats,
-  ticketClasses,
-  selectedIds,
-  onSelect,
-}) {
+                          seatLayoutMap,
+                          seats,
+                          ticketClasses,
+                          selectedIds,
+                          myLockedSeats,
+                          onSelect,
+                        }) {
   const blocks = Array.isArray(seatLayoutMap?.seatLayout) ? seatLayoutMap.seatLayout : [];
   const gridRows = getGridRows(seatLayoutMap);
   const gridCols = getGridCols(seatLayoutMap);
@@ -208,81 +212,82 @@ export function SeatMap({
 
   if (!blocks.length) {
     return (
-      <div className="order-seat-map__empty">
-        Sơ đồ ghế chưa được cấu hình cho sự kiện này.
-      </div>
+        <div className="order-seat-map__empty">
+          Sơ đồ ghế chưa được cấu hình cho sự kiện này.
+        </div>
     );
   }
 
   return (
-    <div className="order-seat-map">
-      <div className="order-seat-map__legend">
-        <div className="order-seat-map__legend-item">
-          <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--available" />
-          <span>Còn trống</span>
+      <div className="order-seat-map">
+        <div className="order-seat-map__legend">
+          <div className="order-seat-map__legend-item">
+            <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--available" />
+            <span>Còn trống</span>
+          </div>
+          <div className="order-seat-map__legend-item">
+            <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--pending" />
+            <span>Đang giữ</span>
+          </div>
+          <div className="order-seat-map__legend-item">
+            <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--booked" />
+            <span>Đã đặt</span>
+          </div>
+          <div className="order-seat-map__legend-item">
+            <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--selected" />
+            <span>Đang chọn</span>
+          </div>
         </div>
-        <div className="order-seat-map__legend-item">
-          <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--pending" />
-          <span>Đang giữ</span>
-        </div>
-        <div className="order-seat-map__legend-item">
-          <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--booked" />
-          <span>Đã đặt</span>
-        </div>
-        <div className="order-seat-map__legend-item">
-          <span className="order-seat-map__legend-swatch order-seat-map__legend-swatch--selected" />
-          <span>Đang chọn</span>
-        </div>
-      </div>
 
-      <div className="order-seat-map__viewport">
-        <div className="order-seat-map__ticket-strip">
-          {(ticketClasses || []).map((ticketClass) => (
-            <div
-              key={ticketClass.ticketClassId}
-              className="order-seat-map__ticket-strip-item"
-            >
+        <div className="order-seat-map__viewport">
+          <div className="order-seat-map__ticket-strip">
+            {(ticketClasses || []).map((ticketClass) => (
+                <div
+                    key={ticketClass.ticketClassId}
+                    className="order-seat-map__ticket-strip-item"
+                >
               <span
-                className="order-seat-map__ticket-strip-dot"
-                style={{ background: ticketClass.color || "#e2e8f0" }}
+                  className="order-seat-map__ticket-strip-dot"
+                  style={{ background: ticketClass.color || "#e2e8f0" }}
               />
-              <div className="order-seat-map__ticket-strip-meta">
-                <strong>{ticketClass.className}</strong>
-                <span>{formatCurrency(ticketClass.price)}</span>
+                  <div className="order-seat-map__ticket-strip-meta">
+                    <strong>{ticketClass.className}</strong>
+                    <span>{formatCurrency(ticketClass.price)}</span>
+                  </div>
+                </div>
+            ))}
+          </div>
+
+          <div className="order-seat-map__stage">{stageLabel}</div>
+
+          <div className="order-seat-map__editor">
+            <div className="order-seat-map__board">
+              <div
+                  className="order-seat-map__grid"
+                  style={{
+                    gridTemplateColumns: `repeat(${gridCols}, ${CELL_SIZE}px)`,
+                    gap: `${CELL_GAP}px`,
+                  }}
+              >
+                {Array.from({ length: gridRows * gridCols }, (_, index) => {
+                  const x = (index % gridCols) + 1;
+                  const y = Math.floor(index / gridCols) + 1;
+                  const seat = gridSeatMap.get(seatKey(x, y));
+
+                  return (
+                      <SeatCell
+                          key={seat?.seatId || `${x}-${y}`}
+                          seat={seat}
+                          selectedIds={selectedIds}
+                          isMyLockedSeat={myLockedSeats ? myLockedSeats.has(seat?.seatId) : false}
+                          onSelect={onSelect}
+                      />
+                  );
+                })}
               </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="order-seat-map__stage">{stageLabel}</div>
-
-        <div className="order-seat-map__editor">
-          <div className="order-seat-map__board">
-            <div
-              className="order-seat-map__grid"
-              style={{
-                gridTemplateColumns: `repeat(${gridCols}, ${CELL_SIZE}px)`,
-                gap: `${CELL_GAP}px`,
-              }}
-            >
-              {Array.from({ length: gridRows * gridCols }, (_, index) => {
-                const x = (index % gridCols) + 1;
-                const y = Math.floor(index / gridCols) + 1;
-                const seat = gridSeatMap.get(seatKey(x, y));
-
-                return (
-                  <SeatCell
-                    key={seat?.seatId || `${x}-${y}`}
-                    seat={seat}
-                    selectedIds={selectedIds}
-                    onSelect={onSelect}
-                  />
-                );
-              })}
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }

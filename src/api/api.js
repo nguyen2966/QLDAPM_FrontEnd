@@ -52,13 +52,15 @@ export const API = {
 
   order: {
     createOrder: (seatIds) => axiosInstance.post('/orders/create', seatIds),
+    updateOrder: (orderId, seatIds) => axiosInstance.put(`/orders/${orderId}`, seatIds),
     confirmPayment: (orderId,seatIds)=> axiosInstance.post(`/orders/${orderId}/confirm-payment`,seatIds),
     getOrder: () => axiosInstance.get('/orders'),
-    getOrderDetails: (orderId) => axiosInstance.get(`/orders/:${orderId}`)
+    getOrderDetails: (orderId) => axiosInstance.get(`/orders/${orderId}`)
   },
 
   payment: {
     createLinkMomo: (orderId, seatIds, amount) => axiosInstance.post(`/payment/momo-link`, { orderId, seatIds, amount }),
+    freePay: (orderId, seatIds) => axiosInstance.post(`/payment/free-payment`, { orderId, seatIds }),
   },
 
   QR: {
