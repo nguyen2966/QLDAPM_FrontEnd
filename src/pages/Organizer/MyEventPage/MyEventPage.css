@@ -328,7 +328,7 @@
 .me-table-wrapper {
   border: 1px solid var(--me-line);
   border-radius: var(--me-radius);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .me-table {
@@ -371,6 +371,20 @@
   padding: 48px 0 !important;
   color: var(--me-muted);
 }
+
+.me-table thead tr th:first-child {
+  border-top-left-radius: var(--me-radius);
+}
+.me-table thead tr th:last-child {
+  border-top-right-radius: var(--me-radius);
+}
+.me-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--me-radius);
+}
+.me-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--me-radius);
+}
+ 
 
 /* Event cell */
 .me-event-cell {
@@ -450,6 +464,12 @@
   background: var(--me-red-50);
 }
 
+.me-status-badge.status-inprogress {
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
+}
+
 .me-status-badge.status-pending {
   color: #b45309;
   border-color: #fde68a;
@@ -463,6 +483,12 @@
 }
 
 .me-status-badge.status-cancelled {
+  color: var(--me-muted);
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.me-status-badge.status-rejected {
   color: var(--me-muted);
   border-color: #e5e7eb;
   background: #f9fafb;

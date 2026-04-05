@@ -1,0 +1,239 @@
+/* Event cell */
+.me-event-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.me-event-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--me-red-50);
+  flex-shrink: 0;
+}
+
+.me-event-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.me-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--me-red-100), var(--me-red-50));
+}
+
+.me-event-name {
+  font-weight: 600;
+  color: var(--me-ink);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.me-event-code {
+  font-size: 12px;
+  color: var(--me-muted);
+}
+
+/* Venue cell */
+.me-venue-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--me-muted);
+}
+
+.me-venue-time,
+.me-venue-loc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.me-venue-time svg,
+.me-venue-loc svg {
+  color: var(--me-red-500);
+  flex-shrink: 0;
+}
+
+/* Status badge */
+.me-status-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1.5px solid;
+}
+
+.me-status-badge.status-active {
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
+}
+
+.me-status-badge.status-inprogress {
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
+}
+
+.me-status-badge.status-pending {
+  color: #b45309;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.me-status-badge.status-completed {
+  color: #059669;
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.me-status-badge.status-cancelled {
+  color: var(--me-muted);
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.me-status-badge.status-rejected {
+  color: var(--me-muted);
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+/* Sold cell */
+.me-sold-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 100px;
+}
+
+.me-sold-numbers {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--me-ink);
+}
+
+.me-progress-bar {
+  height: 6px;
+  background: var(--me-red-100);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.me-progress-fill {
+  height: 100%;
+  background: var(--me-red-600);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* Row action */
+.me-row-action-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.me-row-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--me-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.me-row-action:hover,
+.me-row-action.active {
+  background: var(--me-red-50);
+  color: var(--me-red-600);
+}
+
+/* Dropdown menu */
+.me-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 100;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 6px;
+  min-width: 180px;
+  animation: me-dropdown-in 0.15s ease;
+}
+
+@keyframes me-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.me-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--me-ink, #1a1a2e);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.me-dropdown-item svg {
+  flex-shrink: 0;
+  color: var(--me-muted, #888);
+  transition: color 0.12s;
+}
+
+.me-dropdown-item:hover {
+  background: var(--me-red-50, #fff5f5);
+  color: var(--me-red-600, #dc2626);
+}
+
+.me-dropdown-item:hover svg {
+  color: var(--me-red-500, #ef4444);
+}
+
+.me-dropdown-item.danger {
+  color: #dc2626;
+}
+
+.me-dropdown-item.danger svg {
+  color: #dc2626;
+}
+
+.me-dropdown-item.danger:hover {
+  background: #fff1f1;
+  color: #b91c1c;
+}
+
+.me-dropdown-item.danger:hover svg {
+  color: #b91c1c;
+}
+
+.me-dropdown-divider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 4px 2px;
+}
