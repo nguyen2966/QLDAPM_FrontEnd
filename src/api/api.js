@@ -5,7 +5,7 @@ export const API = {
     register: (data) => axiosInstance.post("/auth/register", data),
     login: (data) => axiosInstance.post("/auth/login", data),
     loginSocial: (token, provider) =>
-      axiosInstance.post("/auth/social-login", { provider, token }),
+        axiosInstance.post("/auth/social-login", { provider, token }),
     refreshToken: () => axiosInstance.post("/auth/refresh-token"),
     logout: () => axiosInstance.delete("/auth/delete-token"),
   },
@@ -17,9 +17,7 @@ export const API = {
   user: {
     getUserById: (userId) => axiosInstance.get(`/users/${userId}`),
     updateUser: (userId, updateData) =>
-      axiosInstance.put(`/users/${userId}`, updateData,{
-        headers: { "Content-Type": "multipart/form-data" },
-      }),
+        axiosInstance.put(`/users/${userId}`, updateData),
   },
 
   event: {
@@ -31,34 +29,36 @@ export const API = {
     getMyEventById: (eventId) => axiosInstance.get(`/event/my-event/${eventId}`),
 
     createBasicInfo: (formData) =>
-      axiosInstance.post("/event/my-event", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      }),
+        axiosInstance.post("/event/my-event", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        }),
 
     createTicketClasses: (eventId, ticketClasses) =>
-      axiosInstance.post(`/event/my-event/${eventId}/ticket-classes`, ticketClasses),
+        axiosInstance.post(`/event/my-event/${eventId}/ticket-classes`, ticketClasses),
 
     getTicketClasses: (eventId) =>
-      axiosInstance.get(`/event/my-event/${eventId}/ticket-classes`),
+        axiosInstance.get(`/event/my-event/${eventId}/ticket-classes`),
 
     createLayout: (eventId, data) =>
-      axiosInstance.post(`/event/my-event/${eventId}/layout`, data),
+        axiosInstance.post(`/event/my-event/${eventId}/layout`, data),
 
     update: (eventId, data) =>
-      axiosInstance.put(`/event/my-event/${eventId}`, data),
+        axiosInstance.put(`/event/my-event/${eventId}`, data),
 
     getMyOrderCustomer: () => axiosInstance.get("/event/my-tickets"),
   },
 
   order: {
     createOrder: (seatIds) => axiosInstance.post('/orders/create', seatIds),
+    updateOrder: (orderId, seatIds) => axiosInstance.put(`/orders/${orderId}`, seatIds),
     confirmPayment: (orderId,seatIds)=> axiosInstance.post(`/orders/${orderId}/confirm-payment`,seatIds),
     getOrder: () => axiosInstance.get('/orders'),
-    getOrderDetails: (orderId) => axiosInstance.get(`/orders/:${orderId}`)
+    getOrderDetails: (orderId) => axiosInstance.get(`/orders/${orderId}`)
   },
 
   payment: {
     createLinkMomo: (orderId, seatIds, amount) => axiosInstance.post(`/payment/momo-link`, { orderId, seatIds, amount }),
+    freePay: (orderId, seatIds) => axiosInstance.post(`/payment/free-payment`, { orderId, seatIds }),
   },
 
   QR: {

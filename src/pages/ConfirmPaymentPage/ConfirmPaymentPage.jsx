@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PaymentForm from "./PaymentForm/paymentForm.jsx";
 import PaymentMethod from "./paymentMethod/PaymentMethod.jsx";
 import PaymentInfo from "./PaymentInfo/PaymentInfo.jsx";
 import {API} from "../../api/api.js";
+import {CustomToast} from "../../components/Toast/toast.jsx";
 
 export function ConfirmPaymentPage() {
     const location = useLocation();
@@ -11,11 +12,21 @@ export function ConfirmPaymentPage() {
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState("momo");
 
-    // Thời gian giữ ghế: 5 phút = 300 giây
-    const [timeLeft, setTimeLeft] = useState(300);
+    const [toastConfig, setToastConfig] = useState(null);
 
-    // Lấy data từ trang chọn ghế truyền sang
-    const { orderId, seatIds, totalAmount, eventName } = location.state || {};
+    // Thêm eventId và holdExpiredAt vào danh sách lấy từ location.state
+    const { orderId, seatIds, totalAmount, eventName, holdExpiredAt, eventId } = location.state || {};
+
+    // 1. BỎ hardcode 300 giây, set giá trị mặc định là 0
+    const [timeLeft, setTimeLeft] = useState(0);
+
+    const showToast = (message, type = "info") => {
+        setToastConfig({ message, type });
+    };
+
+    const closeToast = useCallback(() => {
+        setToastConfig(null);
+    }, []);
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -33,14 +44,33 @@ export function ConfirmPaymentPage() {
 
     // Xử lý đồng hồ đếm ngược
     useEffect(() => {
-        if (timeLeft <= 0) return;
+        if (!holdExpiredAt) return;
+
+        // Hàm tính toán số giây còn lại dựa trên giờ hệ thống và giờ backend
+        const calculateTimeLeft = () => {
+            const now = new Date().getTime();
+            const expiredTime = new Date(holdExpiredAt).getTime();
+            const diff = Math.floor((expiredTime - now) / 1000);
+            return diff > 0 ? diff : 0;
+        };
+
+        // Cập nhật ngay lần đầu tiên
+        setTimeLeft(calculateTimeLeft());
 
         const timerId = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
+            const remaining = calculateTimeLeft();
+            setTimeLeft(remaining);
+
+            if (remaining <= 0) {
+                clearInterval(timerId);
+                showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
+                // Tự động đá về trang sơ đồ ghế khi hết giờ
+                setTimeout(() => navigate(`/order/${eventId}`), 2000);
+            }
         }, 1000);
 
-        return () => clearInterval(timerId); // Cleanup interval khi component unmount
-    }, [timeLeft]);
+        return () => clearInterval(timerId);
+    }, [holdExpiredAt, eventId, navigate]);
 
     // Format giây thành dạng MM:SS
     const formatTime = (seconds) => {
@@ -55,14 +85,38 @@ export function ConfirmPaymentPage() {
     };
 
     const handlePayment = async () => {
+        console.log("Kiểm tra formData hiện tại:", formData);
         if (timeLeft <= 0) {
-            alert("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!");
-            return navigate(-1);
+            showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
+            setTimeout(() => navigate(`/order/${eventId}`), 2000);
+            return;
         }
 
         if (!formData.fullName || !formData.email || !formData.phone) {
-            alert("Vui lòng điền đầy đủ thông tin người đặt vé!");
+            showToast("Vui lòng điền đầy đủ thông tin người đặt vé!", "warning");
             return;
+        }
+
+
+        if (Number(totalAmount) === 0) {
+            try{
+                setLoading(true);
+                const result = await API.payment.freePay(orderId, seatIds);
+                sessionStorage.removeItem(`activeOrder_${eventId}`);
+
+                showToast("Đăng ký vé thành công! Đang chuyển hướng...", "success");
+
+                // Đợi 1.5 giây để hiện Toast xong rồi mới chuyển trang
+                setTimeout(() => {
+                    navigate(`/order/result?orderId=${orderId}&success=true&amount=0`);
+                }, 1500);
+                return;
+            } catch (e){
+                showToast("Đã xảy ra lỗi khi đăng ký vé. Vui lòng thử lại!", "error");
+                throw e
+            } finally {
+                setLoading(false);
+            }
         }
 
         if (paymentMethod !== "momo") return;
@@ -73,13 +127,14 @@ export function ConfirmPaymentPage() {
 
             const payUrl = response.data?.data?.data.payUrl;
             if (payUrl) {
+                sessionStorage.removeItem(`activeOrder_${eventId}`);
                 window.location.href = payUrl;
             } else {
-                alert("Lỗi: Không lấy được link thanh toán từ server.");
+                showToast("Không lấy được link thanh toán từ server.", "error");
             }
         } catch (error) {
             console.error("Lỗi khởi tạo MoMo:", error);
-            alert(error.message || "Khởi tạo thanh toán thất bại. Vui lòng thử lại!");
+            showToast(error.message || "Khởi tạo thanh toán thất bại!", "error");
         } finally {
             setLoading(false);
         }
@@ -140,6 +195,15 @@ export function ConfirmPaymentPage() {
 
                 </div>
             </div>
+
+            {toastConfig && (
+                <CustomToast
+                    message={toastConfig.message}
+                    type={toastConfig.type}
+                    // Truyền hàm đóng: khi toast tự tắt sau 3s, nó sẽ set state về null
+                    onClose={closeToast}
+                />
+            )}
         </div>
     );
 }
