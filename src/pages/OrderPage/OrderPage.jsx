@@ -453,7 +453,7 @@ export function OrderPage() {
 
   if (loading) {
     return (
-        <LoadingState displayText={"Đang tải sơ đồ ghết"}/>
+        <LoadingState displayText={"Đang tải sơ đồ ghế"}/>
     );
   }
 
