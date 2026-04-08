@@ -10,6 +10,7 @@ const EMPTY_CLASS = {
   price: "",
 };
 
+// Hàm tạo ID tạm thời cho UI trước khi được lưu xuống DB
 function taoIdTam() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
@@ -18,68 +19,168 @@ function nhanLoaiVe(type) {
   return type === "STANDING" ? "Ghế đứng" : "Ghế ngồi";
 }
 
-export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
+export const Step2TicketClasses = ({
+  eventId,
+  ticketClasses,       // Nhận state từ CreateEventPage
+  setTicketClasses,    // Nhận hàm set state từ CreateEventPage
+  isSaved,             // Nhận cờ kiểm tra đã lưu lần đầu chưa
+  setIsSaved,          // Nhận hàm set cờ
+  onDone,
+  onBack
+}) => {
   const [draft, setDraft] = useState(EMPTY_CLASS);
-  const [ticketClasses, setTicketClasses] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [submitError, setSubmitError] = useState(""); // Đổi tên từ error -> submitError cho rõ ràng
 
   const totalQuota = useMemo(
     () => ticketClasses.reduce((sum, item) => sum + Number(item.quota || 0), 0),
     [ticketClasses]
   );
 
+  const validationErrors = useMemo(() => {
+    const errors = {};
+
+    // 1. Kiểm tra giá bán (>= 0)
+    if (draft.price !== "") {
+      const parsedPrice = Number(draft.price);
+      if (parsedPrice < 0) {
+        errors.price = "Giá vé không được là số âm (có thể nhập 0 nếu miễn phí).";
+      }
+    }
+
+    // 2. Kiểm tra số lượng (> 0)
+    if (draft.quota !== "") {
+      const parsedQuota = Number(draft.quota);
+      if (parsedQuota <= 0) {
+        errors.quota = "Số lượng vé phải lớn hơn 0.";
+      }
+    }
+
+    // 3. Kiểm tra trùng tên vé (Không phân biệt hoa/thường)
+    if (draft.className.trim()) {
+      const nameLower = draft.className.trim().toLowerCase();
+      // Bỏ qua chính nó nếu đang ở chế độ sửa (editingId)
+      const isDuplicate = ticketClasses.some(
+        (item) => item.id !== editingId && item.className.toLowerCase() === nameLower
+      );
+      if (isDuplicate) {
+        errors.className = "Tên hạng vé này đã tồn tại, vui lòng chọn tên khác.";
+      }
+    }
+
+    return errors;
+  }, [draft, ticketClasses, editingId]);
+
+  // Kiểm tra xem form nháp (draft) hiện tại có lỗi validation nào không
+  const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
+
   const handleDraftChange = (event) => {
     const { name, value } = event.target;
     setDraft((prev) => ({ ...prev, [name]: value }));
+    setSubmitError(""); // Xóa lỗi chung khi người dùng bắt đầu sửa
   };
 
-  const handleAddTicketClass = () => {
-    if (!draft.className.trim() || draft.price === "" || draft.quota === "") {
-      setError("Vui lòng nhập đủ tên hạng vé, số lượng và giá bán.");
+  const handleAddOrUpdateTicketClass = () => {
+    // Chặn ngay nếu có lỗi real-time
+    if (hasValidationErrors) {
+      setSubmitError("Vui lòng sửa các lỗi bôi đỏ trước khi thêm hạng vé.");
       return;
     }
 
-    setTicketClasses((prev) => [
-      ...prev,
-      {
-        id: taoIdTam(),
-        className: draft.className.trim(),
-        description: draft.description.trim(),
-        color: draft.color,
-        type: draft.type,
-        quota: Number(draft.quota),
-        price: Number(draft.price),
-      },
-    ]);
+    if (!draft.className.trim() || draft.price === "" || draft.quota === "") {
+      setSubmitError("Vui lòng nhập đủ tên hạng vé, số lượng và giá bán.");
+      return;
+    }
+
+    if (editingId) {
+      setTicketClasses((prev) =>
+        prev.map((item) =>
+          item.id === editingId
+            ? {
+                ...item,
+                className: draft.className.trim(),
+                description: draft.description.trim(),
+                color: draft.color,
+                type: draft.type,
+                quota: Number(draft.quota),
+                price: Number(draft.price),
+              }
+            : item
+        )
+      );
+      setEditingId(null);
+    } else {
+      setTicketClasses((prev) => [
+        ...prev,
+        {
+          id: taoIdTam(),
+          className: draft.className.trim(),
+          description: draft.description.trim(),
+          color: draft.color,
+          type: draft.type,
+          quota: Number(draft.quota),
+          price: Number(draft.price),
+        },
+      ]);
+    }
 
     setDraft(EMPTY_CLASS);
-    setError("");
+    setSubmitError("");
+  };
+
+  const handleEditClick = (item) => {
+    setDraft({
+      className: item.className,
+      description: item.description || "",
+      color: item.color,
+      type: item.type,
+      quota: item.quota,
+      price: item.price,
+    });
+    setEditingId(item.id);
+    setSubmitError("");
+  };
+
+  const handleCancelEdit = () => {
+    setDraft(EMPTY_CLASS);
+    setEditingId(null);
+    setSubmitError("");
   };
 
   const handleRemoveTicketClass = (id) => {
     setTicketClasses((prev) => prev.filter((item) => item.id !== id));
+    if (editingId === id) {
+      handleCancelEdit();
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!eventId) {
-      setError("Chưa có eventId từ bước 1.");
+      setSubmitError("Chưa có eventId từ bước 1.");
       return;
     }
 
     if (!ticketClasses.length) {
-      setError("Bạn cần tạo ít nhất 1 hạng vé trước khi sang bước 3.");
+      setSubmitError("Bạn cần tạo ít nhất 1 hạng vé trước khi sang bước 3.");
+      return;
+    }
+
+    if (editingId) {
+      setSubmitError("Vui lòng lưu hoàn tất hạng vé đang chỉnh sửa trước khi tiếp tục.");
       return;
     }
 
     setSubmitting(true);
-    setError("");
+    setSubmitError("");
 
     try {
       const payload = ticketClasses.map(
-        ({ className, description, color, type, quota, price }) => ({
+        ({ id, className, description, color, type, quota, price }) => ({
+          id, 
           className,
           description,
           color,
@@ -89,19 +190,34 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
         })
       );
 
-      const response = await API.event.createTicketClasses(eventId, payload);
-
-      if (response.data?.status === "success") {
-        onDone?.();
-        return;
+      if (isSaved) {
+        await API.event.editTicketClasses(eventId, payload);
+      } else {
+        await API.event.createTicketClasses(eventId, payload);
+        setIsSaved(true); 
       }
 
-      setError("Không thể lưu hạng vé.");
+      const fetchRes = await API.event.getTicketClasses(eventId);
+      if (fetchRes.data?.data) {
+        const dbTickets = fetchRes.data.data.map(item => ({
+          ...item,
+          id: item.ticketClassId || item.id
+        }));
+        setTicketClasses(dbTickets);
+      }
+
+      onDone?.(); 
     } catch (err) {
-      setError(err?.response?.data?.message || "Có lỗi xảy ra khi lưu bước 2.");
+      setSubmitError(err?.response?.data?.message || "Có lỗi xảy ra khi lưu bước 2.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Helper render dòng cảnh báo lỗi
+  const renderError = (msg) => {
+    if (!msg) return null;
+    return <span style={{ color: "#ff4d4f", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>{msg}</span>;
   };
 
   return (
@@ -109,8 +225,12 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
       <div className="create-event-step2__layout">
         <section className="create-event-section create-event-step2__form-box">
           <div className="create-event-section__title-wrap">
-            <h3>Thêm hạng vé mới</h3>
-            <p>Tạo từng hạng vé ở cột trái rồi kiểm tra lại ở bảng bên phải.</p>
+            <h3>{editingId ? "Cập nhật hạng vé" : "Thêm hạng vé mới"}</h3>
+            <p>
+              {editingId 
+                ? "Chỉnh sửa thôngธ์ tin hạng vé và nhấn Cập nhật để lưu thay đổi." 
+                : "Tạo từng hạng vé ở cột trái rồi kiểm tra lại ở bảng bên phải."}
+            </p>
           </div>
 
           <div className="create-event-grid">
@@ -122,7 +242,9 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
                 placeholder="VIP, Phổ thông..."
                 value={draft.className}
                 onChange={handleDraftChange}
+                style={{ borderColor: validationErrors.className ? "#ff4d4f" : undefined }}
               />
+              {renderError(validationErrors.className)}
             </label>
 
             <label className="create-event-field create-event-field--full">
@@ -148,12 +270,13 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
               <span>Số lượng tối đa</span>
               <input
                 type="number"
-                min="1"
                 name="quota"
                 placeholder="100"
                 value={draft.quota}
                 onChange={handleDraftChange}
+                style={{ borderColor: validationErrors.quota ? "#ff4d4f" : undefined }}
               />
+              {renderError(validationErrors.quota)}
             </label>
 
             <label className="create-event-field">
@@ -168,22 +291,37 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
               <span>Giá bán</span>
               <input
                 type="number"
-                min="0"
                 name="price"
                 placeholder="1500000"
                 value={draft.price}
                 onChange={handleDraftChange}
+                style={{ borderColor: validationErrors.price ? "#ff4d4f" : undefined }}
               />
+              {renderError(validationErrors.price)}
             </label>
           </div>
 
-          <button
-            type="button"
-            className="create-event-button create-event-button--secondary create-event-button--full"
-            onClick={handleAddTicketClass}
-          >
-            Thêm hạng vé
-          </button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+            <button
+              type="button"
+              className="create-event-button create-event-button--secondary create-event-button--full"
+              onClick={handleAddOrUpdateTicketClass}
+              disabled={hasValidationErrors} // Khóa nút nếu có lỗi input
+              style={{ opacity: hasValidationErrors ? 0.6 : 1, cursor: hasValidationErrors ? "not-allowed" : "pointer" }}
+            >
+              {editingId ? "Lưu thay đổi" : "Thêm hạng vé"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                className="create-event-button create-event-button--ghost"
+                onClick={handleCancelEdit}
+                style={{ padding: "0 24px" }}
+              >
+                Hủy
+              </button>
+            )}
+          </div>
         </section>
 
         <section className="create-event-section create-event-step2__table-box">
@@ -207,13 +345,13 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
                   <th>Số lượng</th>
                   <th>Giá bán</th>
                   <th>Màu</th>
-                  <th />
+                  <th style={{ width: "80px", textAlign: "center" }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {ticketClasses.length ? (
                   ticketClasses.map((item) => (
-                    <tr key={item.id}>
+                    <tr key={item.id} style={{ backgroundColor: editingId === item.id ? "rgba(109, 74, 255, 0.1)" : "transparent" }}>
                       <td>{item.className}</td>
                       <td>{item.description || "—"}</td>
                       <td>{nhanLoaiVe(item.type)}</td>
@@ -226,14 +364,25 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
                         </span>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="create-event-icon-button"
-                          onClick={() => handleRemoveTicketClass(item.id)}
-                          aria-label={`Xóa ${item.className}`}
-                        >
-                          ×
-                        </button>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+                          <button
+                            type="button"
+                            className="create-event-icon-button"
+                            onClick={() => handleEditClick(item)}
+                            title="Sửa"
+                            style={{ opacity: 0.7 }}
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            type="button"
+                            className="create-event-icon-button"
+                            onClick={() => handleRemoveTicketClass(item.id)}
+                            title="Xóa"
+                          >
+                            ×
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -250,14 +399,14 @@ export const Step2TicketClasses = ({ eventId, onDone, onBack }) => {
         </section>
       </div>
 
-      {error ? <p className="create-event-feedback create-event-feedback--error">{error}</p> : null}
+      {submitError ? <p className="create-event-feedback create-event-feedback--error">{submitError}</p> : null}
 
       <div className="create-event-actions">
         <button
           type="button"
           className="create-event-button create-event-button--ghost"
           onClick={onBack}
-          disabled={submitting}
+          disabled={submitting || editingId !== null} 
         >
           Quay lại bước 1
         </button>

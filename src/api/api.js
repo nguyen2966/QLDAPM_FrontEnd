@@ -38,6 +38,13 @@ export const API = {
     createTicketClasses: (eventId, ticketClasses) =>
       axiosInstance.post(`/event/my-event/${eventId}/ticket-classes`, ticketClasses),
 
+    update: (eventId, data) =>
+      axiosInstance.put(`/event/my-event/${eventId}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },}),
+
+    editTicketClasses: (eventId, ticketClasses) => 
+      axiosInstance.put(`/event/my-event/${eventId}/ticket-classes`, ticketClasses),
+
     getTicketClasses: (eventId) =>
       axiosInstance.get(`/event/my-event/${eventId}/ticket-classes`),
 
