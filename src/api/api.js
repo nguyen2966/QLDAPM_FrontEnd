@@ -66,8 +66,25 @@ export const API = {
   },
 
   payment: {
-    createLinkMomo: (orderId, seatIds, amount) => axiosInstance.post(`/payment/momo-link`, { orderId, seatIds, amount }),
-    freePay: (orderId, seatIds) => axiosInstance.post(`/payment/free-payment`, { orderId, seatIds }),
+    // Thêm các trường fullName, email, phone vào payload gửi lên
+    createLinkMomo: (orderId, seatIds, amount, customerInfo) => 
+      axiosInstance.post(`/payment/momo-link`, { 
+        orderId, 
+        seatIds, 
+        amount, 
+        fullName: customerInfo.fullName,
+        email: customerInfo.email,
+        phone: customerInfo.phone
+      }),
+
+    freePay: (orderId, seatIds, customerInfo) => 
+      axiosInstance.post(`/payment/free-payment`, { 
+        orderId, 
+        seatIds,
+        fullName: customerInfo.fullName,
+        email: customerInfo.email,
+        phone: customerInfo.phone
+      }),
   },
 
   QR: {
