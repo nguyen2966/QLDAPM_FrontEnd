@@ -93,6 +93,34 @@ export const Step1BasicInfo = ({ onDone }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const timeToStart = new Date(
+      taoIsoNgayGio(form.dateToStart, form.timeToStart)
+    );
+
+    const timeToRelease = new Date(
+      taoIsoTuDateTimeLocal(form.timeToRelease)
+    );
+
+    const now = new Date();
+
+    // Rule 1
+    if (timeToRelease >= timeToStart) {
+      setError("Thời điểm mở bán phải trước thời gian bắt đầu sự kiện.");
+      return;
+    }
+
+    // Rule 2
+    if (timeToStart <= now) {
+      setError("Thời gian bắt đầu phải lớn hơn thời điểm hiện tại.");
+      return;
+    }
+
+    // Rule 3 (optional nhưng nên có)
+    if (timeToRelease <= now) {
+      setError("Thời điểm mở bán phải ở tương lai.");
+      return;
+    }
+
     if (
       !form.eventName ||
       !form.genre ||
