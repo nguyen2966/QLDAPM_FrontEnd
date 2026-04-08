@@ -2,6 +2,7 @@ import { MiniHeader } from "../MiniHeader/MiniHeader.jsx";
 import "./TicketClassGrid.css";
 
 export function TicketClassGrid({ticketClasses}){
+  console.log(ticketClasses);
   return(
     <div className="ticket-class-block">
       <MiniHeader title={"Các hạng vé"}/>

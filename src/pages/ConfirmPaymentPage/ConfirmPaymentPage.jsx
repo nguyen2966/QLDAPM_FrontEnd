@@ -87,7 +87,7 @@ export function ConfirmPaymentPage() {
         if (Number(totalAmount) === 0) {
             try {
                 setLoading(true);
-                const result = await API.payment.freePay(orderId, seatIds);
+                const result = await API.payment.freePay(orderId, seatIds, formData);
                 sessionStorage.removeItem(`activeOrder_${eventId}`);
 
                 showToast("Đăng ký vé thành công! Đang chuyển hướng...", "success");
@@ -108,7 +108,7 @@ export function ConfirmPaymentPage() {
 
         try {
             setLoading(true);
-            const response = await API.payment.createLinkMomo(orderId, seatIds, totalAmount);
+            const response = await API.payment.createLinkMomo(orderId, seatIds, totalAmount, formData);
 
             const payUrl = response.data?.data?.data.payUrl;
             if (payUrl) {

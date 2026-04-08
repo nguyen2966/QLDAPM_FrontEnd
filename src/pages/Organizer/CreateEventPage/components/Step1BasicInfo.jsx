@@ -1,18 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { API } from "../../../../api/api.js";
 import { useData } from "../../../../hooks/useData.js";
 import { getEventGenreOptions } from "../../../../constants/eventGenres.js";
-
-const INITIAL_FORM = {
-  eventName: "",
-  genre: "",
-  description: "",
-  dateToStart: "",
-  timeToStart: "",
-  timeToRelease: "",
-  duration: "",
-  venueId: "",
-};
 
 function taoIsoNgay(dateValue) {
   if (!dateValue) return "";
@@ -32,22 +21,19 @@ function taoIsoTuDateTimeLocal(value) {
   return new Date(value).toISOString();
 }
 
-export const Step1BasicInfo = ({ onDone }) => {
+export const Step1BasicInfo = ({ 
+  eventId, // Nhận eventId. Nếu có => Update (PUT)
+  form, 
+  setForm, 
+  bannerFile, 
+  setBannerFile, 
+  bannerPreview, 
+  setBannerPreview, 
+  onDone 
+}) => {
   const { venues, loading, events } = useData();
-
-  const [form, setForm] = useState(INITIAL_FORM);
-  const [bannerFile, setBannerFile] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    return () => {
-      if (bannerPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(bannerPreview);
-      }
-    };
-  }, [bannerPreview]);
 
   const genreOptions = useMemo(() => getEventGenreOptions(events), [events]);
 
@@ -79,36 +65,38 @@ export const Step1BasicInfo = ({ onDone }) => {
     setBannerPreview(URL.createObjectURL(file));
   };
 
-  const resetForm = () => {
-    if (bannerPreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(bannerPreview);
-    }
-
-    setForm(INITIAL_FORM);
-    setBannerFile(null);
-    setBannerPreview("");
-    setError("");
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const timeToStart = new Date(taoIsoNgayGio(form.dateToStart, form.timeToStart));
+    const timeToRelease = new Date(taoIsoTuDateTimeLocal(form.timeToRelease));
+    const now = new Date();
+
+    if (timeToRelease >= timeToStart) {
+      setError("Thời điểm mở bán phải trước thời gian bắt đầu sự kiện.");
+      return;
+    }
+    if (timeToStart <= now) {
+      setError("Thời gian bắt đầu phải lớn hơn thời điểm hiện tại.");
+      return;
+    }
+    if (timeToRelease <= now) {
+      setError("Thời điểm mở bán phải ở tương lai.");
+      return;
+    }
     if (
-      !form.eventName ||
-      !form.genre ||
-      !form.description ||
-      !form.dateToStart ||
-      !form.timeToStart ||
-      !form.timeToRelease ||
-      !form.duration ||
-      !form.venueId
+      !form.eventName || !form.genre || !form.description ||
+      !form.dateToStart || !form.timeToStart || !form.timeToRelease ||
+      !form.duration || !form.venueId
     ) {
       setError("Vui lòng nhập đầy đủ thông tin bắt buộc.");
       return;
     }
 
-    if (!bannerFile) {
-      setError("Backend bắt buộc phải có ảnh bìa sự kiện.");
+    // Nếu chưa tạo (không có eventId) thì BẮT BUỘC phải có ảnh. 
+    // Đã tạo rồi (có eventId) thì không up ảnh cũng không sao (dùng ảnh cũ).
+    if (!eventId && !bannerFile) {
+      setError("Backend bắt buộc phải có ảnh bìa sự kiện khi tạo mới.");
       return;
     }
 
@@ -121,20 +109,29 @@ export const Step1BasicInfo = ({ onDone }) => {
     formData.append("timeToRelease", taoIsoTuDateTimeLocal(form.timeToRelease));
     formData.append("duration", String(form.duration).trim());
     formData.append("venueId", String(form.venueId).trim());
-    formData.append("eventImg", bannerFile);
+    
+    // Chỉ đính kèm ảnh nếu người dùng có chọn ảnh (File)
+    if (bannerFile) {
+      formData.append("eventImg", bannerFile);
+    }
 
     setSubmitting(true);
     setError("");
 
     try {
-      const response = await API.event.createBasicInfo(formData);
-
-      if (response.data?.status === "success") {
-        onDone?.(response.data.data.eventId);
-        return;
+      if (eventId) {
+        // --- CHẾ ĐỘ UPDATE (PUT) ---
+        await API.event.update(eventId, formData);
+        onDone?.(eventId); // Giữ nguyên eventId hiện tại chuyển qua bước 2
+      } else {
+        // --- CHẾ ĐỘ CREATE (POST) ---
+        const response = await API.event.createBasicInfo(formData);
+        if (response.data?.status === "success") {
+          onDone?.(response.data.data.eventId); // Truyền eventId mới tạo qua bước 2
+          return;
+        }
+        setError("Không thể tạo thông tin cơ bản cho sự kiện.");
       }
-
-      setError("Không thể tạo thông tin cơ bản cho sự kiện.");
     } catch (err) {
       setError(err?.response?.data?.message || "Có lỗi xảy ra khi gửi dữ liệu bước 1.");
     } finally {
@@ -190,7 +187,6 @@ export const Step1BasicInfo = ({ onDone }) => {
       <section className="create-event-section">
         <div className="create-event-section__title-wrap">
           <h3>Thời gian và địa điểm</h3>
-          
         </div>
 
         <div className="create-event-grid create-event-grid--two">
@@ -243,7 +239,7 @@ export const Step1BasicInfo = ({ onDone }) => {
                 name="venueId"
                 value={form.venueId}
                 onChange={handleChange}
-                disabled={loading.venues}
+                disabled={loading.venues || (eventId && form.venueId)} // Nếu đã có Layout thì có thể bị backend chặn, cẩn thận
               >
                 <option value="">
                   {loading.venues ? "Đang tải địa điểm..." : "Chọn địa điểm"}
@@ -281,7 +277,6 @@ export const Step1BasicInfo = ({ onDone }) => {
       <section className="create-event-section">
         <div className="create-event-section__title-wrap">
           <h3>Ảnh bìa sự kiện</h3>
-
         </div>
 
         <div className="create-event-upload">
@@ -296,7 +291,7 @@ export const Step1BasicInfo = ({ onDone }) => {
             ) : (
               <div className="create-event-upload__placeholder">
                 <span className="create-event-upload__icon">⇪</span>
-                <strong>Tải ảnh bìa sự kiện</strong>
+                <strong>{eventId ? "Tải ảnh bìa mới (Tùy chọn)" : "Tải ảnh bìa sự kiện"}</strong>
                 <p>PNG, JPG hoặc WEBP</p>
               </div>
             )}
@@ -306,17 +301,9 @@ export const Step1BasicInfo = ({ onDone }) => {
 
       {error ? <p className="create-event-feedback create-event-feedback--error">{error}</p> : null}
 
-      <div className="create-event-actions">
-        <button
-          type="button"
-          className="create-event-button create-event-button--ghost"
-          onClick={resetForm}
-          disabled={submitting}
-        >
-          Làm lại
-        </button>
+      <div className="create-event-actions" style={{ justifyContent: "flex-end" }}>
         <button type="submit" className="create-event-button" disabled={submitting}>
-          {submitting ? "Đang tạo..." : "Tiếp tục"}
+          {submitting ? "Đang lưu..." : (eventId ? "Cập nhật & Tiếp tục" : "Tiếp tục")}
         </button>
       </div>
     </form>

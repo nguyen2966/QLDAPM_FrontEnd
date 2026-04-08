@@ -5,6 +5,7 @@ import "./CreateEventPage.css";
 import { Step1BasicInfo } from "./components/Step1BasicInfo.jsx";
 import { Step2TicketClasses } from "./components/Step2TicketClasses.jsx";
 import { Step3SeatLayout } from "./components/Step3SeatLayout.jsx";
+import { LoadingState } from "../../../components/LoadingState/LoadingState.jsx";
 
 const STEP_META = [
   {
@@ -27,6 +28,17 @@ const STEP_META = [
   },
 ];
 
+const INITIAL_STEP1_FORM = {
+  eventName: "",
+  genre: "",
+  description: "",
+  dateToStart: "",
+  timeToStart: "",
+  timeToRelease: "",
+  duration: "",
+  venueId: "",
+};
+
 export const CreateEventPage = () => {
   const navigate = useNavigate();
   const { refreshEvents } = useData();
@@ -34,6 +46,15 @@ export const CreateEventPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [eventId, setEventId] = useState(null);
   const [isCompleted, setIsCompleted] = useState(false);
+
+  // === STATE CỦA BƯỚC 1 ===
+  const [step1Form, setStep1Form] = useState(INITIAL_STEP1_FORM);
+  const [step1BannerFile, setStep1BannerFile] = useState(null);
+  const [step1BannerPreview, setStep1BannerPreview] = useState("");
+
+  // === STATE CỦA BƯỚC 2 ===
+  const [ticketClassesData, setTicketClassesData] = useState([]);
+  const [isStep2Saved, setIsStep2Saved] = useState(false);
 
   const currentMeta = useMemo(
     () => STEP_META.find((step) => step.number === currentStep) ?? STEP_META[0],
@@ -63,6 +84,15 @@ export const CreateEventPage = () => {
     setCurrentStep(1);
     setEventId(null);
     setIsCompleted(false);
+    
+    // Reset toàn bộ state khi làm lại
+    setStep1Form(INITIAL_STEP1_FORM);
+    setStep1BannerFile(null);
+    if (step1BannerPreview?.startsWith("blob:")) URL.revokeObjectURL(step1BannerPreview);
+    setStep1BannerPreview("");
+    
+    setTicketClassesData([]);
+    setIsStep2Saved(false);
   };
 
   return (
@@ -72,9 +102,7 @@ export const CreateEventPage = () => {
           <div>
             <p className="create-event-header__eyebrow">KHU VỰC NHÀ TỔ CHỨC</p>
             <h1 className="create-event-header__title">Tạo sự kiện</h1>
-
           </div>
-
           <div className="create-event-header__actions">
             {eventId ? (
               <span className="create-event-badge">Mã sự kiện: #{eventId}</span>
@@ -93,13 +121,10 @@ export const CreateEventPage = () => {
           {STEP_META.map((step) => {
             const isActive = step.number === currentStep;
             const isDone = step.number < currentStep || (isCompleted && step.number === 3);
-
             return (
               <div
                 key={step.number}
-                className={`create-event-progress__item${isActive ? " is-active" : ""}${
-                  isDone ? " is-done" : ""
-                }`}
+                className={`create-event-progress__item${isActive ? " is-active" : ""}${isDone ? " is-done" : ""}`}
               >
                 <div className="create-event-progress__circle">{step.number}</div>
                 <div className="create-event-progress__text">
@@ -113,24 +138,15 @@ export const CreateEventPage = () => {
 
         {isCompleted ? (
           <section className="create-event-card create-event-success">
+            {/* ... (Phần hoàn thành giữ nguyên) ... */}
             <span className="create-event-success__icon">✓</span>
             <h2>Tạo sự kiện thành công</h2>
-            <p>
-              Bạn đã hoàn tất đủ 3 bước cho sự kiện <strong>#{eventId}</strong>.
-            </p>
+            <p>Bạn đã hoàn tất đủ 3 bước cho sự kiện <strong>#{eventId}</strong>.</p>
             <div className="create-event-success__actions">
-              <button
-                type="button"
-                className="create-event-button create-event-button--secondary"
-                onClick={handleStartOver}
-              >
+              <button type="button" className="create-event-button create-event-button--secondary" onClick={handleStartOver}>
                 Tạo sự kiện khác
               </button>
-              <button
-                type="button"
-                className="create-event-button"
-                onClick={() => navigate("/")}
-              >
+              <button type="button" className="create-event-button" onClick={() => navigate("/")}>
                 Về trang chủ
               </button>
             </div>
@@ -145,23 +161,38 @@ export const CreateEventPage = () => {
               </div>
             </div>
 
-            {currentStep === 1 ? <Step1BasicInfo onDone={handleBasicInfoDone} /> : null}
+            {currentStep === 1 && (
+              <Step1BasicInfo 
+                eventId={eventId}
+                form={step1Form}
+                setForm={setStep1Form}
+                bannerFile={step1BannerFile}
+                setBannerFile={setStep1BannerFile}
+                bannerPreview={step1BannerPreview}
+                setBannerPreview={setStep1BannerPreview}
+                onDone={handleBasicInfoDone} 
+              />
+            )}
 
-            {currentStep === 2 ? (
+            {currentStep === 2 && (
               <Step2TicketClasses
                 eventId={eventId}
+                ticketClasses={ticketClassesData}
+                setTicketClasses={setTicketClassesData}
+                isSaved={isStep2Saved}
+                setIsSaved={setIsStep2Saved}
                 onDone={handleTicketClassesDone}
                 onBack={() => setCurrentStep(1)}
               />
-            ) : null}
+            )}
 
-            {currentStep === 3 ? (
+            {currentStep === 3 && (
               <Step3SeatLayout
                 eventId={eventId}
                 onDone={handleWizardDone}
                 onBack={() => setCurrentStep(2)}
               />
-            ) : null}
+            )}
           </section>
         )}
       </div>
