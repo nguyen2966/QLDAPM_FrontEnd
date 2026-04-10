@@ -71,41 +71,40 @@
 }
 
 .me-status-badge.status-active {
-  color: var(--me-red-600);
-  border-color: var(--me-red-200);
-  background: var(--me-red-50);
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background: #eff6ff;
 }
 
 .me-status-badge.status-inprogress {
-  color: var(--me-red-600);
-  border-color: var(--me-red-200);
-  background: var(--me-red-50);
+  color: #047857;
+  border-color: #6ee7b7;
+  background: #ecfdf5;
 }
 
 .me-status-badge.status-pending {
-  color: #b45309;
-  border-color: #fde68a;
+  color: #92400e;
+  border-color: #fcd34d;
   background: #fffbeb;
 }
 
 .me-status-badge.status-completed {
-  color: #059669;
-  border-color: #a7f3d0;
-  background: #ecfdf5;
+  color: #5b21b6;
+  border-color: #ddd6fe;
+  background: #f5f3ff;
 }
 
 .me-status-badge.status-cancelled {
-  color: var(--me-muted);
-  border-color: #e5e7eb;
-  background: #f9fafb;
+  color: #374151;
+  border-color: #d1d5db;
+  background: #f3f4f6;
 }
 
 .me-status-badge.status-rejected {
-  color: var(--me-muted);
-  border-color: #e5e7eb;
-  background: #f9fafb;
+  color: var(--me-red-600);
+  border-color: var(--me-red-200);
+  background: var(--me-red-50);
 }
-
 /* Sold cell */
 .me-sold-cell {
   display: flex;
