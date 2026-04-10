@@ -65,7 +65,7 @@ export const EventCard = ({
 
   const handleDelete = () => {
     setMenuOpen(false);
-    toast.success("Xóa sự kiện");
+    toast.warn("Không khuyến khích xóa sự kiện.");
   };
 
   return (
