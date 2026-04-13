@@ -104,10 +104,11 @@ export const API = {
       rejectReason: rejectReason,
     }),
     getPendingEvent: () => axiosInstance.get('/admin/pending-events'),
-    approveEvent: (eventId) => axiosInstance.put('/admin/aprrove-event', {eventId: eventId}),
+    approveEvent: (eventId) => axiosInstance.put('/admin/approve-event', {eventId: eventId}),
     disaprroveEvent: (eventId, reason) => axiosInstance.put('/admin/disapprove-event', {
       eventId: eventId,
       rejectReason: reason,
-    })
+    }),
+    getEvent: (eventId) => axiosInstance.get(`/admin/event/${eventId}`),
   }
 };

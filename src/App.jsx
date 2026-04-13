@@ -21,6 +21,7 @@ import { AdminPanel } from "./pages/AdminPages/AminPanel.jsx";
 import { OrganizerApprovalPage } from "./pages/AdminPages/OrganizerApprovalPage/OrganizerApprovalPage.jsx";
 import { EventApprovalPage } from "./pages/AdminPages/EventApprovalPage/EventApprovalPage.jsx";
 import { OrganizerApprovalDetail} from "./pages/AdminPages/OrganizerApprovalPage/components/OrganizerApprovalDetail.jsx";
+import { EventApprovalDetail } from "./pages/AdminPages/EventApprovalPage/EventApprovalDetail.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -68,7 +69,8 @@ export default function App() {
           <Route path="/admin" element = {<AdminPanel/>}/>
           <Route path="/admin/organizer" element = {<OrganizerApprovalPage/>}/>
           <Route path="/admin/organizer/:userId" element = {<OrganizerApprovalDetail />} />
-          <Route path="/admin/event" element = {<EventApprovalPage/>}/>
+          <Route path="/admin/event/:eventId" element={<EventApprovalDetail />}/>
+          <Route path="/admin/event" element = {<EventApprovalPage />}/>
         </Route>
 
         {/* Customer + Organizer */}

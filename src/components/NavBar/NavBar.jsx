@@ -210,6 +210,17 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
   );
 
   const renderAdminNav = () => {
+    return (
+    <nav>
+      <Link className="home-nav__link" to="/admin/organizer">
+        Duyệt người tổ chức
+      </Link>
+
+      <Link className="home-nav__link" to="/admin/event">
+        Duyệt sự kiện
+      </Link>
+    </nav>
+    )
   }
 
   return (
