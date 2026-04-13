@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "./axiosInstance.js";
 
 export const API = {
@@ -96,6 +97,7 @@ export const API = {
   },
 
   admin: {
-    //Sau khi hiện thực các API backend thì thêm vào đây
+    getDisapprovedOrganizers: () => axiosInstance.get('/admin/disapproved-users'),
+    approvedOrganizer: (organizerId) => axiosInstance.put('/admin/approve-organizer', {organizerId: organizerId}),
   }
 };

@@ -209,6 +209,9 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
     </nav>
   );
 
+  const renderAdminNav = () => {
+  }
+
   return (
     <header className="home-header">
       <div className="home-header__left">
@@ -220,6 +223,8 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
           ? renderCustomerNav()
           : roleKey === "organizer"
           ? renderOrganizerNav()
+          : roleKey === "admin"
+          ? renderAdminNav()
           : renderCustomerNav()}
       </div>
 

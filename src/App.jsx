@@ -20,6 +20,7 @@ import OrganizerRoute from "./components/ProtectCreateEvent/OrganizerRout.jsx";
 import { AdminPanel } from "./pages/AdminPages/AminPanel.jsx";
 import { OrganizerApprovalPage } from "./pages/AdminPages/OrganizerApprovalPage/OrganizerApprovalPage.jsx";
 import { EventApprovalPage } from "./pages/AdminPages/EventApprovalPage/EventApprovalPage.jsx";
+import { OrganizerApprovalDetail} from "./pages/AdminPages/OrganizerApprovalPage/components/OrganizerApprovalDetail.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -62,6 +63,14 @@ export default function App() {
 
        <Route path="/" element={<HomePage />} />
 
+        {/* Admin only */}
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element = {<AdminPanel/>}/>
+          <Route path="/admin/organizer" element = {<OrganizerApprovalPage/>}/>
+          <Route path="/admin/organizer/:userId" element = {<OrganizerApprovalDetail />} />
+          <Route path="/admin/event" element = {<EventApprovalPage/>}/>
+        </Route>
+
         {/* Customer + Organizer */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER", "ORGANIZER"]} />}>
           
@@ -85,15 +94,6 @@ export default function App() {
 
           <Route path="/my-event" element = {<MyEventPage/>}/>
         </Route>
-
-         {/* Admin only */}
-        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin" element = {<AdminPanel/>}/>
-          <Route path="/admin/organizer" element = {<OrganizerApprovalPage/>}/>
-          <Route path="/admin/event" element = {<EventApprovalPage/>}/>
-        </Route>
-
-        
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

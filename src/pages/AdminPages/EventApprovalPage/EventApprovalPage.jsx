@@ -1,7 +1,7 @@
+import React from 'react'
+
 export const EventApprovalPage = () => {
   return (
-    <div>
-      Trang admin duyệt sự kiện
-    </div>
+    <div>EventApprovalPage</div>
   )
 }
