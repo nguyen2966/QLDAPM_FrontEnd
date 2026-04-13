@@ -98,24 +98,13 @@ export const OrganizerApprovalDetail = () => {
   const handleReject = useCallback(async (reason) => {
     setSubmitting(true);
     try {
-      /*
-       * TODO: Khi backend cung cấp endpoint từ chối, thay thế block dưới:
-       *
-       * const res = await fetch(`${API_BASE}/admin/reject-organizer`, {
-       *   method: "PUT",
-       *   headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
-       *   body: JSON.stringify({ organizerId: organizer.userId, reason }),
-       * });
-       */
+      const res = await API.admin.disapproveOrganizer(organizer.userId, reason)
 
-      /* Tạm thời giả lập delay */
-      await new Promise((r) => setTimeout(r, 800));
-
-      showToast("Đã từ chối và ghi nhận lí do.", "success");
+      toast.success("Đã từ chối và ghi nhận lí do.");
       setModalMode(null);
-      setTimeout(() => navigate("/admin/organizers"), 1600);
+      setTimeout(() => navigate("/admin/organizer"), 1600);
     } catch (err) {
-      showToast(err.message, "error");
+      toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
       setModalMode(null);
     } finally {
       setSubmitting(false);
@@ -314,14 +303,14 @@ export const OrganizerApprovalDetail = () => {
 
           {/* Action bar */}
           <div className="oa-detail__action-bar">
-            {/* <button
+            <button
               className="oa-btn-reject"
               type="button"
               onClick={() => setModalMode("reject")}
               disabled={submitting}
             >
-              ✕ TỪ CHỐI
-            </button> */}
+              TỪ CHỐI NHÀ TỔ CHỨC
+            </button>
             <button
               className="oa-btn-approve"
               type="button"

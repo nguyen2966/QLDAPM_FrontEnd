@@ -99,5 +99,15 @@ export const API = {
   admin: {
     getDisapprovedOrganizers: () => axiosInstance.get('/admin/disapproved-users'),
     approvedOrganizer: (organizerId) => axiosInstance.put('/admin/approve-organizer', {organizerId: organizerId}),
+    disapproveOrganizer: (organizerId, rejectReason) => axiosInstance.put('/admin/disapprove-organizer', {
+      organizerId: organizerId,
+      rejectReason: rejectReason,
+    }),
+    getPendingEvent: () => axiosInstance.get('/admin/pending-events'),
+    approveEvent: (eventId) => axiosInstance.put('/admin/aprrove-event', {eventId: eventId}),
+    disaprroveEvent: (eventId, reason) => axiosInstance.put('/admin/disapprove-event', {
+      eventId: eventId,
+      rejectReason: reason,
+    })
   }
 };
