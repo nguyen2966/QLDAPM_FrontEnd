@@ -20,6 +20,13 @@ export const AdminPanel = () => {
         </button>
       </Link>
 
+      <br />
+      <Link to="/admin/user">
+        <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+          Chuyển đến trang quản lý người dùng hệ thống
+        </button>
+      </Link>
+
     </div>
   )
 }

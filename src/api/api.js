@@ -110,5 +110,12 @@ export const API = {
       rejectReason: reason,
     }),
     getEvent: (eventId) => axiosInstance.get(`/admin/event/${eventId}`),
+    getUsers: (filters) => axiosInstance.get(
+      '/admin/users', 
+      {
+        params: filters,
+      }),
+    disableUser: (userId, reason) => axiosInstance.put(`/admin/users/${userId}/disable`, {disabledReason: reason}),
+    enableUser: (userId, reason) => axiosInstance.put(`/admin/users/${userId}/enable`, {disabledReason: reason}),
   }
 };

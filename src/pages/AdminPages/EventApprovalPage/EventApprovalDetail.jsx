@@ -474,7 +474,7 @@ export const EventApprovalDetail = () => {
               </button>
               <button
                 onClick={confirmApprove}
-                className="px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg"
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg"
               >
                 Xác nhận Duyệt
               </button>
