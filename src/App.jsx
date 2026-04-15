@@ -53,6 +53,17 @@ const ProtectedRoute = ({ allowedRoles }) => {
   return <Outlet />;
 };
 
+// Guard đảm bảo Admin không vào đây.
+const AdminRestrictedRoute = () => {
+  const { user } = useAuth();
+  if (!user) return <Outlet />;
+  if (user.role === "ADMIN") {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <Outlet />;
+};
+
 export default function App() {
   return (
     <Routes>
@@ -64,8 +75,9 @@ export default function App() {
 
       {/* Tất cả route bên dưới đều có NavBar + Footer */}
       <Route element={<MainLayout />}> 
-
-       <Route path="/" element={<HomePage />} />
+        <Route element={<AdminRestrictedRoute />} >
+          <Route path="/" element={<HomePage />} />
+        </Route>
 
         {/* Admin only */}
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
