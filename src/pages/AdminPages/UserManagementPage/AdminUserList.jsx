@@ -77,13 +77,14 @@ export const AdminUserList = () => {
         res = await API.admin.getUsers({ page, pageSize, role, search });
       }
       const data = res.data.data;
-      setUsers(data.items || []);
+      const fetchUsers = data.items || [];
+      setUsers(fetchUsers);
       setTotalItem(data.totalItem || 0);
       
       // Giả sử API trả về các thông số này, nếu không bạn cần gọi API thống kê riêng
-      const totalOrg = users.filter((u) => u.role === "ORGANIZER").length
-      const totalLock = users.filter((u) => u.isDeleted === 1).length
-      console.log(totalOrg, totalLock);
+      const totalOrg = fetchUsers.filter((u) => u.role === "ORGANIZER").length
+      const totalLock = fetchUsers.filter((u) => u.isDeleted === 1).length
+      console.log(users,totalOrg, totalLock);
       setTotalOrganizers(totalOrg);
       setTotalLocked(totalLock);
       

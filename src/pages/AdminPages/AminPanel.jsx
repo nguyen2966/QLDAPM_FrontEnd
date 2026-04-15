@@ -6,7 +6,7 @@ export const AdminPanel = () => {
       Welcome to Admin Panel
       <br />
 
-      <Link to="/admin/organizer">
+      <Link to="/admin/organizer-approve">
         <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
           Chuyển đến trang duyệt nhà tổ chức
         </button>

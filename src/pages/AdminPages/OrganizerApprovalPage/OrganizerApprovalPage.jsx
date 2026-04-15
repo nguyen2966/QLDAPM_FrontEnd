@@ -84,7 +84,7 @@ export const OrganizerApprovalPage = () => {
 
   /* ── Đi tới trang chi tiết ── */
   const goToDetail = (organizer) => {
-    navigate(`/admin/organizer/${organizer.userId}`);
+    navigate(`/admin/organizer-approve/${organizer.userId}`);
   };
 
   if (error) {

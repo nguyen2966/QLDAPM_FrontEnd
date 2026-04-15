@@ -81,7 +81,7 @@ export const OrganizerApprovalDetail = () => {
       if (data.status === "success") {
         toast.success("Nhà tổ chức #" + organizer.userId + " đã được phê duyệt thành công!. Đưa admin về trang quản lý.");
         setModalMode(null);
-        setTimeout(() => navigate("/admin/organizer"), 3000);
+        setTimeout(() => navigate("/admin/organizer-approve"), 3000);
       } else {
         toast.error("Phê duyệt cho nhà tổ chức này thất bại");
         throw new Error(data.message || "Phê duyệt thất bại.");
@@ -102,7 +102,7 @@ export const OrganizerApprovalDetail = () => {
 
       toast.success("Đã từ chối và ghi nhận lí do.");
       setModalMode(null);
-      setTimeout(() => navigate("/admin/organizer"), 1600);
+      setTimeout(() => navigate("/admin/organizer-approve"), 1600);
     } catch (err) {
       toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
       setModalMode(null);
@@ -145,7 +145,7 @@ export const OrganizerApprovalDetail = () => {
           <button
             className="home-btn home-btn--ghost"
             style={{ margin: "14px auto 0" }}
-            onClick={() => navigate("/admin/organizers")}
+            onClick={() => navigate("/admin/organizer-approve")}
           >
             Quay lại danh sách
           </button>
@@ -160,7 +160,7 @@ export const OrganizerApprovalDetail = () => {
       <nav className="oa-breadcrumb" aria-label="Breadcrumb">
         <a href="/admin">Quản trị viên</a>
         <span className="oa-breadcrumb__sep">|</span>
-        <a href="/admin/organizer">Quản lí Nhà tổ chức</a>
+        <a href="/admin/organizer-approve">Quản lí Nhà tổ chức</a>
         <span className="oa-breadcrumb__sep">|</span>
         <span className="oa-breadcrumb__current">Chi tiết giấy phép kinh doanh</span>
       </nav>

@@ -22,7 +22,9 @@ import { OrganizerApprovalPage } from "./pages/AdminPages/OrganizerApprovalPage/
 import { EventApprovalPage } from "./pages/AdminPages/EventApprovalPage/EventApprovalPage.jsx";
 import { OrganizerApprovalDetail} from "./pages/AdminPages/OrganizerApprovalPage/components/OrganizerApprovalDetail.jsx";
 import { EventApprovalDetail } from "./pages/AdminPages/EventApprovalPage/EventApprovalDetail.jsx";
-import AdminUserList from "./pages/AdminPages/UserManagementPage/AdminUserList.jsx";
+import { AdminUserList } from "./pages/AdminPages/UserManagementPage/AdminUserList.jsx";
+import { AdminOrganizerDetail } from "./pages/AdminPages/UserManagementPage/AdminOrganizerDetail.jsx";
+import { AdminCustomerDetail } from "./pages/AdminPages/UserManagementPage/AdminCustomerDetail.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -68,11 +70,13 @@ export default function App() {
         {/* Admin only */}
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element={<AdminPanel/>}/>
-          <Route path="/admin/organizer" element={<OrganizerApprovalPage/>}/>
-          <Route path="/admin/organizer/:userId" element={<OrganizerApprovalDetail />} />
+          <Route path="/admin/organizer-approve" element={<OrganizerApprovalPage/>}/>
+          <Route path="/admin/organizer-approve/:userId" element={<OrganizerApprovalDetail />} />
           <Route path="/admin/event/:eventId" element={<EventApprovalDetail />}/>
           <Route path="/admin/event" element={<EventApprovalPage />}/>
           <Route path="/admin/user" element={<AdminUserList />}/>
+          <Route path="/admin/organizer/:id" element={<AdminOrganizerDetail />}/>
+          <Route path="/admin/customer/:id" element={<AdminCustomerDetail />} />
         </Route>
 
         {/* Customer + Organizer */}

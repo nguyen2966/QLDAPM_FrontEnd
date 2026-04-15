@@ -117,5 +117,7 @@ export const API = {
       }),
     disableUser: (userId, reason) => axiosInstance.put(`/admin/users/${userId}/disable`, {disabledReason: reason}),
     enableUser: (userId, reason) => axiosInstance.put(`/admin/users/${userId}/enable`, {disabledReason: reason}),
+    getOrganizerInformation: (organizerId) => axiosInstance.get(`/admin/organizers/${organizerId}`),
+    getCustomerInfo: (customerId) => axiosInstance.get(`/admin/customers/${customerId}`),
   }
 };
