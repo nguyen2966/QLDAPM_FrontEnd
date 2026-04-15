@@ -4,6 +4,7 @@ import { ApproveOrRejectModal } from "./ApproveOrRejectModal";
 import "../OrganizerApproval.css";
 import { API } from "../../../../api/api";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 /* ── Label hồ sơ hoàn chỉnh ── */
 function ProfileBadge({ isProfileComplete }) {
@@ -157,12 +158,22 @@ export const OrganizerApprovalDetail = () => {
   return (
     <div className="oa-page">
       {/* Breadcrumb */}
-      <nav className="oa-breadcrumb" aria-label="Breadcrumb">
-        <a href="/admin">Quản trị viên</a>
-        <span className="oa-breadcrumb__sep">|</span>
-        <a href="/admin/organizer-approve">Quản lí Nhà tổ chức</a>
-        <span className="oa-breadcrumb__sep">|</span>
-        <span className="oa-breadcrumb__current">Chi tiết giấy phép kinh doanh</span>
+      <nav className="flex items-center gap-2 text-sm mb-8">
+        <Link
+          to="/admin"
+          className="text-gray-400 hover:text-red-700 transition-colors"
+        >
+          Quản trị viên
+        </Link>
+        <span className="text-gray-300">/</span>
+        <Link
+          to="/admin/organizer-approve"
+          className="text-gray-400 hover:text-red-700 transition-colors"
+        >
+          Duyệt nhà tổ chức
+        </Link>
+        <span className="text-gray-300">/</span>
+        <span className="text-red-700 font-medium">Thông tin giấy phép nhà tổ chức</span>
       </nav>
 
       <div className="oa-detail">

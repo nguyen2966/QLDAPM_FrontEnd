@@ -147,7 +147,7 @@ export const AdminOrganizerDetail = () => {
                   />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-2xl font-bold mb-3 shadow-inner">
-                    {info.name?.[0]?.toUpperCase() ?? "?"}
+                    {user.name?.[0]?.toUpperCase() ?? "?"}
                   </div>
                 )}
                 <h3 className="text-lg font-bold text-gray-900">{user.name}</h3>
