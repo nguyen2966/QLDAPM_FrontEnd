@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "./axiosInstance.js";
 
 export const API = {
@@ -96,6 +97,27 @@ export const API = {
   },
 
   admin: {
-    //Sau khi hiện thực các API backend thì thêm vào đây
+    getDisapprovedOrganizers: () => axiosInstance.get('/admin/disapproved-users'),
+    approvedOrganizer: (organizerId) => axiosInstance.put('/admin/approve-organizer', {organizerId: organizerId}),
+    disapproveOrganizer: (organizerId, rejectReason) => axiosInstance.put('/admin/disapprove-organizer', {
+      organizerId: organizerId,
+      rejectReason: rejectReason,
+    }),
+    getPendingEvent: () => axiosInstance.get('/admin/pending-events'),
+    approveEvent: (eventId) => axiosInstance.put('/admin/approve-event', {eventId: eventId}),
+    disaprroveEvent: (eventId, reason) => axiosInstance.put('/admin/disapprove-event', {
+      eventId: eventId,
+      rejectReason: reason,
+    }),
+    getEvent: (eventId) => axiosInstance.get(`/admin/event/${eventId}`),
+    getUsers: (filters) => axiosInstance.get(
+      '/admin/users', 
+      {
+        params: filters,
+      }),
+    disableUser: (userId, reason) => axiosInstance.put(`/admin/users/${userId}/disable`, {disabledReason: reason}),
+    enableUser: (userId, reason) => axiosInstance.put(`/admin/users/${userId}/enable`, {disabledReason: reason}),
+    getOrganizerInformation: (organizerId) => axiosInstance.get(`/admin/organizers/${organizerId}`),
+    getCustomerInfo: (customerId) => axiosInstance.get(`/admin/customers/${customerId}`),
   }
 };

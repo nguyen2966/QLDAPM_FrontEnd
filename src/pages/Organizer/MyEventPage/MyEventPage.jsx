@@ -116,20 +116,22 @@ export function MyEventPage() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   const navigate = useNavigate();
-  useEffect(() => {
-    const fetchMyEventData = async () => {
-      setLoading(true);
 
-      try {
-        const res = await API.event.getMyEvents();
-        const data = res.data?.data;
-        setData(data);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
+  const fetchMyEventData = async () => {
+    setLoading(true);
+
+    try {
+      const res = await API.event.getMyEvents();
+      const data = res.data?.data;
+      setData(data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
     }
+  }
+  
+  useEffect(() => {
     fetchMyEventData();
     // setTimeout(() => {
     //   setData(MOCK_RESPONSE.data);
@@ -191,7 +193,7 @@ export function MyEventPage() {
     { key: "APPROVED", label: "Đã được duyệt" },
     { key: "IN_PROGRESS", label: "Đang diễn ra"},
     { key: "PENDING", label: "Chờ duyệt" },
-    { key: "COMPLETED", label: "Đã kết thúc" },
+    { key: "ENDED", label: "Đã kết thúc" },
     { key: "CANCLED", label: "Đã hủy" },
   ];
 
@@ -334,6 +336,7 @@ export function MyEventPage() {
                     formatDateTime={formatDateTime}
                     getStatusClass={getStatusClass}
                     getStatusLabel={getStatusLabel}
+                    onRefresh={fetchMyEventData}
                     />
                 ))
               )}
