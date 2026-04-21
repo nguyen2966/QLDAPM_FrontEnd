@@ -66,16 +66,15 @@ export const AdminUserList = () => {
     setLoading(true);
     try {
       // Gọi API thực tế, bạn có thể cần truyền thêm `pageSize` vào API nếu BE có hỗ trợ
-      let res;
-      if(search == "" && role == "") {
-        res = await API.admin.getUsers({ page, pageSize });
-      } else if (role == "") {
-        res = await API.admin.getUsers({ page, pageSize, search });
-      } else if (search == "") {
-        res = await API.admin.getUsers({ page, pageSize, role });
-      } else {
-        res = await API.admin.getUsers({ page, pageSize, role, search });
-      }
+      const params = { 
+        page, 
+        pageSize, 
+        ...(search && { search }), 
+        ...(role && { role }),
+        ...(status && { status }) // <-- Truyền status ("active" hoặc "locked") xuống BE
+      };
+      console.log("Dữ liệu gửi đi:", params);
+      const res = await API.admin.getUsers(params);
       const data = res.data.data;
       const fetchUsers = data.items || [];
       setUsers(fetchUsers);
