@@ -216,7 +216,7 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
         Duyệt người tổ chức
       </Link>
 
-      <Link className="home-nav__link" to="/admin/organizer">
+      <Link className="home-nav__link" to="/admin/user">
         Quản lý người dùng
       </Link>
 
