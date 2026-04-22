@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import LockAccountModal from "./components/LockAccountModal";
 import { API } from "../../../api/api";
 import { toast } from "react-toastify";
@@ -18,6 +18,7 @@ export const AdminOrganizerDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showLock, setShowLock] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     setLoading(true);
@@ -171,7 +172,7 @@ export const AdminOrganizerDetail = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div>
-                    <p className="text-gray-500 text-xs mb-1">Trạng thái</p>
+                    <p className="text-gray-500 text-xs mb-1">Trạng thái tài khoản</p>
                     <span
                       className={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${user.isActive ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}`}
                     >
@@ -179,7 +180,7 @@ export const AdminOrganizerDetail = () => {
                     </span>
                   </div>
                   <div>
-                    <p className="text-gray-500 text-xs mb-1">Giấy phép</p>
+                    <p className="text-gray-500 text-xs mb-1">Tình trạng phê duyệt</p>
                     <span
                       className={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${user.isApproved ? "bg-green-50 text-green-700 border-green-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}`}
                     >
@@ -202,6 +203,17 @@ export const AdminOrganizerDetail = () => {
               >
                 {user.isActive ? "KHÓA TÀI KHOẢN" : "MỞ KHÓA TÀI KHOẢN"}
               </button>
+
+              {!user.isApproved && (
+                <button
+                onClick={() =>
+                  navigate(`/admin/organizer-approve/${id}`)
+                }
+                className={"w-full mt-3 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all shadow-sm active:scale-95 border bg-white text-red-700 border-red-300 hover:bg-red-50"}
+              >
+                PHÊ DUYỆT NHÀ TỔ CHỨC NÀY
+              </button>
+              ) }
             </div>
           </div>
 
