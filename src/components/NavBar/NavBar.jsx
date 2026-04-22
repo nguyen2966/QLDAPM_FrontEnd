@@ -304,7 +304,7 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
                     type="button"
                     role="menuitem"
                     onClick={() =>
-                      chonMuc(() => alert("Demo: Trang “Lịch sử vé” sẽ làm sau."))
+                      chonMuc(() => navigate("/order/my-order"))
                     }
                   >
                     Lịch sử vé
