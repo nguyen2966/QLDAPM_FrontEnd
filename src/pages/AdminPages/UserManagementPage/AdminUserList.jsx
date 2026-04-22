@@ -136,7 +136,7 @@ export const AdminUserList = () => {
   const handleViewDetail = (user) => {
     if (user.role === "CUSTOMER") {
       navigate(`/admin/customer/${user.userId}`);
-    } if (user.role === "ORGANIZER") {
+    } else if (user.role === "ORGANIZER") {
       navigate(`/admin/organizer/${user.userId}`);
     } else {
       toast.error("Không thể xem thông tin của ADMIN này.");
