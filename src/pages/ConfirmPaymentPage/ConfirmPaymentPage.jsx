@@ -97,6 +97,25 @@ export function ConfirmPaymentPage() {
 
     const handlePayment = async () => {
         console.log("Kiểm tra formData hiện tại:", formData);
+
+        const result = paymentSchema.safeParse(formData);
+
+        if (!result.success) {
+            const fieldErrors = {};
+
+            result.error.issues.forEach((err) => {
+                const field = err.path[0];
+                if (!fieldErrors[field]) {
+                    fieldErrors[field] = err.message;
+                }
+            });
+
+            setErrors(fieldErrors);
+
+            showToast("Vui lòng kiểm tra lại thông tin!", "warning");
+            return; //CHẶN submit
+        }
+
         if (timeLeft <= 0) {
             showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
             setTimeout(() => navigate(`/order/${eventId}`), 2000);
