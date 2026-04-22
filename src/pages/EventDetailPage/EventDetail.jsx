@@ -5,6 +5,52 @@ import { LoadingState } from "../../components/LoadingState/LoadingState.jsx";
 
 // --- Các Component giao diện nhỏ (Được định nghĩa ngay trong file để tái sử dụng) ---
 
+const CountdownTimer = ({ targetDate }) => {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: false
+  });
+
+  useEffect(() => {
+    // Hàm tính toán thời gian cập nhật mỗi giây
+    const interval = setInterval(() => {
+      const targetTime = new Date(targetDate).getTime();
+      const currentTime = new Date().getTime();
+      const difference = targetTime - currentTime;
+
+      if (difference <= 0) {
+        // Nếu thời gian đã qua, dừng đếm ngược
+        clearInterval(interval);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
+      } else {
+        // Tính toán ngày, giờ, phút, giây
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+          isExpired: false
+        });
+      }
+    }, 1000);
+
+    // Dọn dẹp interval khi component bị unmount
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  // Hàm định dạng số để luôn có 2 chữ số (VD: 09 thay vì 9)
+  const format = (num) => String(num).padStart(2, '0');
+
+  if (timeLeft.isExpired) {
+    return <span className="text-red-600 font-bold">Sự kiện đã bắt đầu</span>;
+  }
+
+  return (
+    <span className="font-mono text-sm">
+      {format(timeLeft.days)} ngày : {format(timeLeft.hours)} : {format(timeLeft.minutes)} : {format(timeLeft.seconds)}
+    </span>
+  );
+};
+
 const SectionTitle = ({ title }) => (
   <h2 className="text-2xl font-bold text-gray-900 border-l-4 border-red-600 pl-3 mb-4">
     {title}
@@ -28,6 +74,20 @@ const fmtCurrency = (amount) => {
       }).format(num);
 };
 
+const calProgress = (dueDate, startDate) => {
+  const now = new Date().getTime();
+  const due = new Date(dueDate).getTime();
+  const start = new Date(startDate).getTime();
+
+  const timeLeft = due - now;
+  const durationTime = due - start;
+
+  if(timeLeft < 0) {
+    return 0;
+  }
+  const progress = timeLeft / durationTime * 100;
+  return progress >= 0 ? progress : 0;
+}
 // --- Component Chính ---
 
 export const EventDetail = () => {
@@ -117,15 +177,28 @@ export const EventDetail = () => {
               <SectionTitle title="Các hạng vé" />
               <div className="space-y-4">
                 {eventDetail.ticketClasses?.map(item => (
-                  <div key={item.ticketClassId} className="flex flex-col sm:flex-row justify-between sm:items-center p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-red-300 transition-colors">
-                    <div className="mb-4 sm:mb-0">
+                  <div
+                    key={item.ticketClassId}
+                    className="relative flex flex-col sm:flex-row justify-between sm:items-center p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-red-300 transition-colors"
+                  >
+                    {/* Thanh đệm */}
+                    <div className="absolute left-0 top-0 h-full w-1.5 bg-red-500 rounded-l-xl" style={{ backgroundColor: `${item.color}` }}></div>
+
+                    <div className="ml-2 mb-4 sm:mb-0">
                       <p className="text-lg font-bold text-gray-900">{item.className}</p>
-                      <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                      <p className="text-sm text-gray-500 mt-1">{item.description || "Chưa có mô tả."}</p>
                     </div>
+
                     <div className="flex flex-col items-start sm:items-end gap-2">
-                      <p className="text-xl font-extrabold text-red-600">{fmtCurrency(item.price)}</p>
-                      <button 
-                        onClick={() => navigate(`/order/${eventDetail.eventId}`, { state: { eventDetail } })}
+                      <p className="text-xl font-extrabold text-red-600">
+                        {fmtCurrency(item.price)}
+                      </p>
+                      <button
+                        onClick={() =>
+                          navigate(`/order/${eventDetail.eventId}`, {
+                            state: { eventDetail },
+                          })
+                        }
                         className="px-6 py-2 border border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 font-medium rounded-lg transition-colors bg-white text-sm"
                       >
                         Chọn vé
@@ -143,16 +216,19 @@ export const EventDetail = () => {
             {/* Box Đặt vé */}
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
               <h3 className="font-bold text-lg text-gray-900 mb-1">Đặt vé ngay</h3>
-              <p className="text-sm text-gray-500 mb-6">Chỉ từ <span className="font-bold text-red-600">500.000 VNĐ</span></p>
+              <p className="text-sm text-gray-500 mb-6">Chỉ từ <span className="font-bold text-red-600">{fmtCurrency(eventDetail.ticketClasses?.reduce(
+                (acc, curr) => {
+                  return Number(curr.price) < Number(acc.price) ? curr : acc;
+                }
+              ).price)}</span></p>
               
-              {/* Giả lập thanh Progress bar thời gian */}
               <div className="mb-6">
-                <div className="flex justify-between text-xs text-gray-500 mb-2 font-medium">
+                <div className="flex justify-between items-center text-xs text-gray-500 mb-2 font-medium">
                   <span>Thời gian còn lại</span>
-                  <span>02 ngày : 04 : 12 : 55</span>
+                  <CountdownTimer targetDate={eventDetail.dateToStart} />
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div className="bg-red-600 h-2 rounded-full" style={{ width: "65%" }}></div>
+                  <div className="bg-red-600 h-2 rounded-full" style={{ width: `${calProgress(eventDetail.dateToStart, eventDetail.timeToRelease)}%` }}></div>
                 </div>
               </div>
 
