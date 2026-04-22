@@ -37,6 +37,13 @@ const EmptyState = () => (
   </tr>
 );
 
+const fmt = (raw) => {
+  if (!raw) return "—";
+  const d = new Date(raw);
+  return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}, ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+};
+
+
 const roleMap = {
   CUSTOMER: "Khách hàng",
   ORGANIZER: "Nhà tổ chức",
@@ -66,16 +73,15 @@ export const AdminUserList = () => {
     setLoading(true);
     try {
       // Gọi API thực tế, bạn có thể cần truyền thêm `pageSize` vào API nếu BE có hỗ trợ
-      let res;
-      if(search == "" && role == "") {
-        res = await API.admin.getUsers({ page, pageSize });
-      } else if (role == "") {
-        res = await API.admin.getUsers({ page, pageSize, search });
-      } else if (search == "") {
-        res = await API.admin.getUsers({ page, pageSize, role });
-      } else {
-        res = await API.admin.getUsers({ page, pageSize, role, search });
-      }
+      const params = { 
+        page, 
+        pageSize, 
+        ...(search && { search }), 
+        ...(role && { role }),
+        ...(status && { status }) // <-- Truyền status ("active" hoặc "locked") xuống BE
+      };
+      console.log("Dữ liệu gửi đi:", params);
+      const res = await API.admin.getUsers(params);
       const data = res.data.data;
       const fetchUsers = data.items || [];
       setUsers(fetchUsers);
@@ -130,14 +136,15 @@ export const AdminUserList = () => {
   const handleViewDetail = (user) => {
     if (user.role === "CUSTOMER") {
       navigate(`/admin/customer/${user.userId}`);
-    } else {
+    } else if (user.role === "ORGANIZER") {
       navigate(`/admin/organizer/${user.userId}`);
+    } else {
+      toast.error("Không thể xem thông tin của ADMIN này.");
     }
   };
 
   const getStatusLabel = (user) => {
     if (user.isDeleted === 1) return "Bị khóa";
-    if (user.role === "ORGANIZER" && user.isProfileComplete === false) return "Chờ duyệt";
     return "Hoạt động";
   };
 
@@ -223,6 +230,7 @@ export const AdminUserList = () => {
               <option value="">Tất cả vai trò</option>
               <option value="CUSTOMER">Khách hàng</option>
               <option value="ORGANIZER">Nhà tổ chức</option>
+              <option value="ADMIN">Quản trị viên hệ thống</option>
             </select>
 
             {/* Status Filter */}
@@ -313,6 +321,7 @@ export const AdminUserList = () => {
                         <td className="px-6 py-4">
                           <p className="text-sm text-gray-600">{user.email}</p>
                           <p className="text-xs text-gray-400 mt-0.5">{user.phoneNumber || "Chưa cập nhật SDT"}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Ngày tạo: {fmt(user.createdAt) || "Không có thông tin ngày tạo."}</p>
                         </td>
 
                         {/* Role */}
@@ -332,12 +341,12 @@ export const AdminUserList = () => {
                         {/* Action */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <button
+                            {user.role !== "ADMIN" && (<button
                               onClick={() => handleViewDetail(user)}
                               className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-all shadow-sm"
                             >
                               Chi tiết
-                            </button>
+                            </button>)}
                             {statusText !== "Bị khóa" ? (
                               <button
                                 onClick={() => setLockUser(user)}
