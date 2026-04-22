@@ -5,6 +5,7 @@ import PaymentMethod from "./paymentMethod/PaymentMethod.jsx";
 import PaymentInfo from "./PaymentInfo/PaymentInfo.jsx";
 import {API} from "../../api/api.js";
 import { toast } from "react-toastify";
+import { paymentSchema } from "../../validates/paymentValidate.js";
 
 export function ConfirmPaymentPage() {
     const location = useLocation();
@@ -15,6 +16,8 @@ export function ConfirmPaymentPage() {
     const { orderId, seatIds, totalAmount, eventName, holdExpiredAt, eventId } = location.state || {};
 
     const [timeLeft, setTimeLeft] = useState(0);
+
+    const [errors, setErrors] = useState();
 
     const showToast = (message, type = "info") => {
         toast[type](message);
@@ -68,7 +71,28 @@ export function ConfirmPaymentPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const newData = {
+            ...formData,
+            [name]: value,
+        };
+
+        setFormData(newData);
+
+        //validate realtime
+       const result = paymentSchema.safeParse(newData);
+
+        if (!result.success) {
+        const fieldErrors = {};
+
+        result.error.issues.forEach((err) => {
+            fieldErrors[err.path[0]] = err.message;
+        });
+
+        setErrors(fieldErrors);
+        } else {
+        setErrors({});
+        }
+        //setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handlePayment = async () => {
@@ -152,6 +176,7 @@ export function ConfirmPaymentPage() {
                         <PaymentForm
                             formData={formData}
                             onChange={handleInputChange}
+                            errors={errors}
                         />
                         <PaymentMethod
                             paymentMethod={paymentMethod}

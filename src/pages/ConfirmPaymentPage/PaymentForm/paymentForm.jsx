@@ -1,7 +1,7 @@
 import React from 'react'
 
 
-const PaymentForm = ({formData, onChange}) => {
+const PaymentForm = ({formData, onChange, errors }) => {
     return (
         <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">
@@ -22,6 +22,9 @@ const PaymentForm = ({formData, onChange}) => {
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition"
                         required
                     />
+                    {errors?.fullName && (
+                        <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -38,6 +41,9 @@ const PaymentForm = ({formData, onChange}) => {
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition"
                             required
                         />
+                        {errors?.email && (
+                         <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -52,6 +58,9 @@ const PaymentForm = ({formData, onChange}) => {
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition"
                             required
                         />
+                        {errors?.phone && (
+                            <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                        )}
                     </div>
                 </div>
             </form>
