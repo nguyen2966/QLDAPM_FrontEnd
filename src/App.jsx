@@ -25,6 +25,7 @@ import { EventApprovalDetail } from "./pages/AdminPages/EventApprovalPage/EventA
 import { AdminUserList } from "./pages/AdminPages/UserManagementPage/AdminUserList.jsx";
 import { AdminOrganizerDetail } from "./pages/AdminPages/UserManagementPage/AdminOrganizerDetail.jsx";
 import { AdminCustomerDetail } from "./pages/AdminPages/UserManagementPage/AdminCustomerDetail.jsx";
+import ScrollToTop from "./global/ScrollToTop.jsx";
 
 // Layout chung — bọc NavBar + Footer quanh Outlet
 const MainLayout = () => {
@@ -66,6 +67,8 @@ const AdminRestrictedRoute = () => {
 
 export default function App() {
   return (
+    <>
+    <ScrollToTop/>
     <Routes>
       {/* Login & Signup — KHÔNG có NavBar/Footer */}
       <Route path="/login" element={<Login />} />
@@ -120,5 +123,6 @@ export default function App() {
 
       </Route>
     </Routes>
+    </>
   );
 }
