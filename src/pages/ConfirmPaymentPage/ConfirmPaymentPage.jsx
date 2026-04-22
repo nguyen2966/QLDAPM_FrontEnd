@@ -5,6 +5,7 @@ import PaymentMethod from "./paymentMethod/PaymentMethod.jsx";
 import PaymentInfo from "./PaymentInfo/PaymentInfo.jsx";
 import {API} from "../../api/api.js";
 import { toast } from "react-toastify";
+import { paymentSchema } from "../../validates/paymentValidate.js";
 
 export function ConfirmPaymentPage() {
     const location = useLocation();
@@ -15,6 +16,8 @@ export function ConfirmPaymentPage() {
     const { orderId, seatIds, totalAmount, eventName, holdExpiredAt, eventId } = location.state || {};
 
     const [timeLeft, setTimeLeft] = useState(0);
+
+    const [errors, setErrors] = useState();
 
     const showToast = (message, type = "info") => {
         toast[type](message);
@@ -68,11 +71,51 @@ export function ConfirmPaymentPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const newData = {
+            ...formData,
+            [name]: value,
+        };
+
+        setFormData(newData);
+
+        //validate realtime
+       const result = paymentSchema.safeParse(newData);
+
+        if (!result.success) {
+        const fieldErrors = {};
+
+        result.error.issues.forEach((err) => {
+            fieldErrors[err.path[0]] = err.message;
+        });
+
+        setErrors(fieldErrors);
+        } else {
+        setErrors({});
+        }
+        //setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handlePayment = async () => {
         console.log("Kiểm tra formData hiện tại:", formData);
+
+        const result = paymentSchema.safeParse(formData);
+
+        if (!result.success) {
+            const fieldErrors = {};
+
+            result.error.issues.forEach((err) => {
+                const field = err.path[0];
+                if (!fieldErrors[field]) {
+                    fieldErrors[field] = err.message;
+                }
+            });
+
+            setErrors(fieldErrors);
+
+            showToast("Vui lòng kiểm tra lại thông tin!", "warning");
+            return; //CHẶN submit
+        }
+
         if (timeLeft <= 0) {
             showToast("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế!", "warning");
             setTimeout(() => navigate(`/order/${eventId}`), 2000);
@@ -152,6 +195,7 @@ export function ConfirmPaymentPage() {
                         <PaymentForm
                             formData={formData}
                             onChange={handleInputChange}
+                            errors={errors}
                         />
                         <PaymentMethod
                             paymentMethod={paymentMethod}
