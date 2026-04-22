@@ -1,13 +1,6 @@
 import axios from "axios";
 import { EnvVariables } from "../env/env.js";
 
-// const axiosInstance = axios.create({
-//   baseURL: EnvVariables.BACKEND_URL,
-//   withCredentials: true,
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-// });
 
 const axiosInstance = axios.create({
   baseURL: EnvVariables.BACKEND_URL, 
@@ -53,6 +46,12 @@ axiosInstance.interceptors.response.use(
       }
       // status 401: không có token → user chưa đăng nhập, AuthProvider tự xử lý
       // Không redirect ở đây để AuthProvider catch được và setLoading(false) bình thường
+      return Promise.reject(error);
+    }
+
+    const message = error.response?.data?.message;
+    //Không refresh nếu tài khoản bị khóa
+    if (status === 403 && message === "Tài khoản đã bị khóa") {
       return Promise.reject(error);
     }
 

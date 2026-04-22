@@ -127,6 +127,7 @@ export function Login() {
     } catch (err) {
       const msg = err.response?.data?.message || `Đăng nhập ${provider} thất bại.`;
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
