@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { API } from "../../api/api.js";
 import { useEffect, useState } from "react";
 import { LoadingState } from "../../components/LoadingState/LoadingState.jsx";
@@ -127,7 +127,11 @@ export const EventDetail = () => {
           
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
             <span className="text-gray-500 font-medium text-sm">
-              EventPass / Sự kiện / <span className="text-red-600">{eventDetail.eventName}</span>
+              EventPass / <Link
+                to="/"
+                className="text-gray-400 hover:text-red-700 transition-colors"
+              >
+                Sự kiện </Link> / <span className="text-red-600">{eventDetail.eventName}</span>
             </span>
             
             <div className="hidden md:block w-px h-6 bg-gray-300 mx-2"></div>
