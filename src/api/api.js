@@ -49,6 +49,10 @@ export const API = {
     getTicketClasses: (eventId) =>
       axiosInstance.get(`/event/my-event/${eventId}/ticket-classes`),
 
+    deleteTicketClass: (eventId, ticketClassId) => 
+      axiosInstance.put(`/event/my-event/${eventId}/ticket-classes/delete`, { ticketClassId }),
+
+
     createLayout: (eventId, data) =>
       axiosInstance.post(`/event/my-event/${eventId}/layout`, data),
 

@@ -79,8 +79,12 @@ const calProgress = (dueDate, startDate) => {
   const due = new Date(dueDate).getTime();
   const start = new Date(startDate).getTime();
 
-  const timeLeft = due - now;
+  let timeLeft = due - now;
   const durationTime = due - start;
+
+  if(timeLeft > durationTime){
+    timeLeft = durationTime;
+  }
 
   if(timeLeft < 0) {
     return 0;
@@ -99,6 +103,7 @@ export const EventDetail = () => {
     const fetchEventDetail = async () => {
       try {
         const response = await API.event.getById(eventId);
+        console.log("test: ", response.data.data)
         setEventDetail(response.data.data);
       } catch (error) {
         console.error("Error fetching event:", error);
