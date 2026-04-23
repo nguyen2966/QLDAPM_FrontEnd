@@ -75,7 +75,7 @@ const MyTicketsPage = () => {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center">
                 <p className="text-gray-600 mb-4">Không tìm thấy mã vé.</p>
-                <button onClick={() => navigate('/user/my-orders')} className="text-blue-600 underline">Quay lại danh sách vé</button>
+                <button onClick={() => navigate('/order/my-order')} className="text-blue-600 underline">Quay lại danh sách vé</button>
             </div>
         );
     }

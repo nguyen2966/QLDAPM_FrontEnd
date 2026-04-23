@@ -27,7 +27,7 @@ const SuccessPayment = ({orderId, amount, navigate}) => {
             {/* Nút bấm */}
             <div className="w-full space-y-3">
                 <button
-                    onClick={() => navigate('/user/my-tickets')} // Đổi link này theo route quản lý vé của bạn
+                    onClick={() => navigate('/order/my-order')} // Đổi link này theo route quản lý vé của bạn
                     className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold rounded-lg transition duration-200"
                 >
                     Xem vé của tôi
