@@ -59,6 +59,7 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user: authUser } = useAuth();
+  console.log(authUser);
 
   const roleKey = useMemo(() => normalizeRole(role), [role]);
   const nhanVaiTro = useMemo(() => tenVaiTro(role), [role]);
@@ -255,10 +256,19 @@ export function NavBar({ token, role, onLogout, avatarUrl, displayName }) {
           </div>
         ) : (
           <div className="nav-userWrap" ref={wrapRef}>
-            <div className="nav-rolePill" aria-label="Trạng thái tài khoản">
-              <span className="nav-roleDot" aria-hidden="true" />
-              <span className="nav-roleText">{nhanVaiTro}</span>
-            </div>
+            {nhanVaiTro !== "Khách hàng" ? (
+              <div className="nav-rolePill" aria-label="Trạng thái tài khoản">
+                <span className="nav-roleDot" aria-hidden="true" />
+                <span className="nav-roleText">{nhanVaiTro}</span>
+              </div>
+            ) : (
+              <div className="nav-rolePill" aria-label="Trạng thái tài khoản">
+                <span className="nav-roleDot" aria-hidden="true" />
+                <span className="nav-roleText">{authUser.name}</span>
+              </div>
+            )
+          }
+            
 
             <button
               type="button"
