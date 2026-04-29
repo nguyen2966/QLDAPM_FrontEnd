@@ -48,7 +48,7 @@ export function Footer() {
       </div>
 
       <div className="home-footer__bottom">
-        <span>© {new Date().getFullYear()} EventPass — Giao diện Đỏ & Trắng</span>
+        <span>© {new Date().getFullYear()} EventPass</span>
         <span className="home-footer__mini">Mã QR động • Chọn chỗ realtime • Soát vé thông minh</span>
       </div>
     </footer>
